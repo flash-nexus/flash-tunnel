@@ -33,7 +33,9 @@ async function importAdapterModule(spec: string, cwd: string): Promise<Record<st
   }
   catch (error) {
     throw adapterError(
-      `Cannot load adapter "${spec}": ${error instanceof Error ? error.message : String(error)}`,
+      `Cannot load adapter "${spec}": ${error instanceof Error
+        ? error.message
+        : String(error)}`,
       'Use npm:package-name, file:./adapter.mjs or a path to a local adapter module',
       error
     )
@@ -42,7 +44,9 @@ async function importAdapterModule(spec: string, cwd: string): Promise<Record<st
 
 async function resolveExport(module: Record<string, unknown>, key: string): Promise<unknown> {
   const candidate = module.default ?? module[key] ?? module.adapter
-  return typeof candidate === 'function' ? await (candidate as () => unknown)() : candidate
+  return typeof candidate === 'function'
+    ? await (candidate as () => unknown)()
+    : candidate
 }
 
 function checkVersion(spec: string, candidate: { apiVersion?: number }): void {

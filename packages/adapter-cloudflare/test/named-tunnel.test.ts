@@ -19,16 +19,30 @@ describe('cloudflareTunnel (named mode)', () => {
         return jsonResponse({ status: 'active' })
       }
       if (path.endsWith('/accounts')) {
-        return jsonResponse([{ id: 'acc-1', name: 'Example' }])
+        return jsonResponse([
+          { id: 'acc-1', name: 'Example' }
+        ])
       }
       if (method === 'POST' && path.endsWith('/cfd_tunnel')) {
-        return jsonResponse({ id: 'tunnel-1', name: 'flash-tunnel-demo', status: 'inactive', token: 'secret-token' })
+        return jsonResponse({
+          id: 'tunnel-1',
+          name: 'flash-tunnel-demo',
+          status: 'inactive',
+          token: 'secret-token'
+        })
       }
       if (method === 'PUT' && path.endsWith('/configurations')) {
         return jsonResponse({})
       }
       if (method === 'GET' && path.endsWith('/cfd_tunnel/tunnel-1')) {
-        return jsonResponse({ id: 'tunnel-1', name: 'flash-tunnel-demo', status: 'healthy', connections: [{ id: 'conn-1' }] })
+        return jsonResponse({
+          id: 'tunnel-1',
+          name: 'flash-tunnel-demo',
+          status: 'healthy',
+          connections: [
+            { id: 'conn-1' }
+          ]
+        })
       }
       if (method === 'DELETE' && path.endsWith('/cfd_tunnel/tunnel-1/connections')) {
         return jsonResponse({})

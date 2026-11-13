@@ -12,16 +12,66 @@ interface FrameworkDefinition {
 }
 
 const FRAMEWORKS: FrameworkDefinition[] = [
-  { name: 'next', dependencies: ['next'], devPort: 3000, previewPort: 3000 },
-  { name: 'nuxt', dependencies: ['nuxt'], devPort: 3000, previewPort: 3000 },
-  { name: 'astro', dependencies: ['astro'], devPort: 4321, previewPort: 4321 },
-  { name: 'sveltekit', dependencies: ['@sveltejs/kit'], devPort: 5173, previewPort: 4173 },
-  { name: 'vue-cli', dependencies: ['@vue/cli-service'], devPort: 8080, previewPort: 8080 },
-  { name: 'cra', dependencies: ['react-scripts'], devPort: 3000, previewPort: 3000 },
-  { name: 'angular', dependencies: ['@angular/cli'], devPort: 4200, previewPort: 4200 },
-  { name: 'storybook', dependencies: ['storybook'], devPort: 6006, previewPort: 6006 },
-  { name: 'umi', dependencies: ['umi'], devPort: 8000, previewPort: 8000 },
-  { name: 'vite', dependencies: ['vite'], devPort: 5173, previewPort: 4173 }
+  {
+    name: 'next',
+    dependencies: ['next'],
+    devPort: 3000,
+    previewPort: 3000
+  },
+  {
+    name: 'nuxt',
+    dependencies: ['nuxt'],
+    devPort: 3000,
+    previewPort: 3000
+  },
+  {
+    name: 'astro',
+    dependencies: ['astro'],
+    devPort: 4321,
+    previewPort: 4321
+  },
+  {
+    name: 'sveltekit',
+    dependencies: ['@sveltejs/kit'],
+    devPort: 5173,
+    previewPort: 4173
+  },
+  {
+    name: 'vue-cli',
+    dependencies: ['@vue/cli-service'],
+    devPort: 8080,
+    previewPort: 8080
+  },
+  {
+    name: 'cra',
+    dependencies: ['react-scripts'],
+    devPort: 3000,
+    previewPort: 3000
+  },
+  {
+    name: 'angular',
+    dependencies: ['@angular/cli'],
+    devPort: 4200,
+    previewPort: 4200
+  },
+  {
+    name: 'storybook',
+    dependencies: ['storybook'],
+    devPort: 6006,
+    previewPort: 6006
+  },
+  {
+    name: 'umi',
+    dependencies: ['umi'],
+    devPort: 8000,
+    previewPort: 8000
+  },
+  {
+    name: 'vite',
+    dependencies: ['vite'],
+    devPort: 5173,
+    previewPort: 4173
+  }
 ]
 
 const BUILD_DIRECTORIES = ['dist', 'build', 'out']
@@ -54,7 +104,9 @@ function readPackageJson(cwd: string): PackageJson | undefined {
     return JSON.parse(readFileSync(path, 'utf8')) as PackageJson
   }
   catch (error) {
-    throw new Error(`Cannot parse ${path}: ${error instanceof Error ? error.message : String(error)}`)
+    throw new Error(`Cannot parse ${path}: ${error instanceof Error
+      ? error.message
+      : String(error)}`)
   }
 }
 
@@ -68,7 +120,10 @@ function detectPackageManager(cwd: string, pkg: PackageJson | undefined): {
   while (true) {
     const declared = currentPackage?.packageManager?.split('@')[0]
     if (declared === 'bun' || declared === 'npm' || declared === 'pnpm' || declared === 'yarn') {
-      return { manager: declared, source: join(directory, 'package.json') }
+      return {
+        manager: declared,
+        source: join(directory, 'package.json')
+      }
     }
 
     for (const [lockfile, manager] of PACKAGE_MANAGER_BY_LOCKFILE) {
@@ -208,7 +263,9 @@ export function detectServer(
   options: DetectServerOptions = {}
 ): ServerPlan {
   const baseDirectory = resolve(cwd)
-  const workingDirectory = overrides.cwd ? resolve(baseDirectory, overrides.cwd) : baseDirectory
+  const workingDirectory = overrides.cwd
+    ? resolve(baseDirectory, overrides.cwd)
+    : baseDirectory
 
   if (overrides.command) {
     return {
@@ -224,14 +281,18 @@ export function detectServer(
 
   if (overrides.url) {
     const url = new URL(overrides.url)
-    const defaultPort = url.protocol === 'https:' ? 443 : 80
+    const defaultPort = url.protocol === 'https:'
+      ? 443
+      : 80
     return {
       mode: 'attach',
       cwd: workingDirectory,
       url: overrides.url,
       framework: 'unknown',
       port: overrides.port ?? Number(url.port || defaultPort),
-      portSource: overrides.port === undefined ? 'url' : 'explicit',
+      portSource: overrides.port === undefined
+        ? 'url'
+        : 'explicit',
       reason: 'server.url is configured',
       confidence: 'high'
     }
@@ -244,7 +305,9 @@ export function detectServer(
       overrides.port ?? 4173,
       'unknown',
       'server.dir is configured',
-      overrides.port === undefined ? 'default' : 'explicit'
+      overrides.port === undefined
+        ? 'default'
+        : 'explicit'
     )
   }
 
@@ -261,7 +324,9 @@ export function detectServer(
       overrides.port ?? 4173,
       'unknown',
       `static mode forced (${staticDirectory}/)`,
-      overrides.port === undefined ? 'default' : 'explicit'
+      overrides.port === undefined
+        ? 'default'
+        : 'explicit'
     )
   }
 
@@ -335,7 +400,9 @@ export function detectServer(
       overrides.port ?? 4173,
       framework,
       `static build output in ${staticDirectory}/`,
-      overrides.port === undefined ? 'default' : 'explicit'
+      overrides.port === undefined
+        ? 'default'
+        : 'explicit'
     )
   }
 

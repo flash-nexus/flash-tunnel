@@ -12,7 +12,9 @@ export interface SpawnCommand {
 }
 
 function quoteWindowsArgument(value: string): string {
-  return /[\s"]/.test(value) ? `"${value.replaceAll('"', '\\"')}"` : value
+  return /[\s"]/.test(value)
+    ? `"${value.replaceAll('"', '\\"')}"`
+    : value
 }
 
 /**
@@ -25,7 +27,11 @@ function quoteWindowsArgument(value: string): string {
  */
 export function shellInvocation(command: string, args: readonly string[] = []): SpawnCommand {
   if (process.platform !== 'win32') {
-    return { command, args: [...args], shell: false }
+    return {
+      command,
+      args: [...args],
+      shell: false
+    }
   }
 
   return {
@@ -104,13 +110,17 @@ export function formatDuration(milliseconds: number): string {
 
   if (milliseconds < 60_000) {
     const seconds = milliseconds / 1000
-    return `${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`
+    return `${Number.isInteger(seconds)
+      ? seconds
+      : seconds.toFixed(1)}s`
   }
 
   if (milliseconds >= 3_600_000) {
     const hours = Math.floor(milliseconds / 3_600_000)
     const minutes = Math.round((milliseconds % 3_600_000) / 60_000)
-    return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`
+    return minutes === 0
+      ? `${hours}h`
+      : `${hours}h ${minutes}m`
   }
 
   const minutes = Math.floor(milliseconds / 60_000)
@@ -133,7 +143,13 @@ export function parseDuration(input: string | number): number {
 
   const value = Number(match[1] ?? '0')
   const unit = match[2] ?? 'ms'
-  const multiplier = unit === 'ms' ? 1 : unit === 's' ? 1000 : unit === 'm' ? 60_000 : 3_600_000
+  const multiplier = unit === 'ms'
+    ? 1
+    : unit === 's'
+      ? 1000
+      : unit === 'm'
+        ? 60_000
+        : 3_600_000
   const milliseconds = Math.floor(value * multiplier)
 
   if (milliseconds < 1000) {

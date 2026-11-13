@@ -40,7 +40,10 @@ const tunnel = {
       stdio: 'ignore',
       windowsHide: true
     })
-    handle.meta = { ...handle.meta, processPid: String(tunnelProcess.pid) }
+    handle.meta = {
+      ...handle.meta,
+      processPid: String(tunnelProcess.pid)
+    }
   },
   waitReady: async (_ctx, handle) => ({
     state: 'connected',
@@ -81,7 +84,9 @@ const dns = {
 async function main() {
   const session = await startPreviewSession({
     cwd,
-    config: { server: { command: 'node server.mjs', port: 0 } },
+    config: {
+      server: { command: 'node server.mjs', port: 0 }
+    },
     adapters: { tunnel, dns },
     mode: 'named',
     hostname: 'crash.example.com',
@@ -107,7 +112,9 @@ async function main() {
   if (process.env.GRACEFUL === '1') {
     const shutdown = async (signal) => {
       await session.stop().catch(() => {})
-      process.exit(signal === 'SIGINT' ? 130 : 143)
+      process.exit(signal === 'SIGINT'
+        ? 130
+        : 143)
     }
     process.on('SIGINT', () => {
       void shutdown('SIGINT')

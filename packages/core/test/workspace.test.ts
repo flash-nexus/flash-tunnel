@@ -21,9 +21,15 @@ async function writePackage(path: string, content: unknown): Promise<void> {
 
 describe('detectWorkspaceCandidates', () => {
   it('finds runnable apps and packages', async () => {
-    await writePackage('apps/web', { name: 'web', scripts: { dev: 'vite' } })
+    await writePackage('apps/web', {
+      name: 'web',
+      scripts: { dev: 'vite' }
+    })
     await writePackage('packages/lib', { name: 'lib' })
-    await writePackage('packages/ui', { name: 'ui', scripts: { start: 'node server.mjs' } })
+    await writePackage('packages/ui', {
+      name: 'ui',
+      scripts: { start: 'node server.mjs' }
+    })
 
     const candidates = detectWorkspaceCandidates(cwd)
     expect(candidates.map(candidate => candidate.name)).toEqual(['web', 'ui'])

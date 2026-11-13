@@ -28,7 +28,9 @@ describe('cloudflareTunnel (quick mode)', () => {
   })
 
   it('reports a missing binary', async () => {
-    const adapter = createCloudflareTunnel({ cloudflaredPath: join(tmpdir(), 'does-not-exist-cloudflared') })
+    const adapter = createCloudflareTunnel({
+      cloudflaredPath: join(tmpdir(), 'does-not-exist-cloudflared')
+    })
     const ctx = createContext(tmpdir())
 
     await expect(adapter.preflight(ctx, { mode: 'quick' })).rejects.toMatchObject({

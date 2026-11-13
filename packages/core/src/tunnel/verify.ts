@@ -63,7 +63,9 @@ async function dnsDiagnostic(hostname: string): Promise<string | undefined> {
 async function detectBlockedHost(response: Response): Promise<PublicHostBlockedError | undefined> {
   const body = await response.text().catch(() => '')
   const match = VITE_BLOCKED_HOST_PATTERN.exec(body)
-  return match?.[1] ? new PublicHostBlockedError(match[1]) : undefined
+  return match?.[1]
+    ? new PublicHostBlockedError(match[1])
+    : undefined
 }
 
 export async function verifyPublicUrl(
@@ -105,7 +107,9 @@ export async function verifyPublicUrl(
     await sleep(intervalMs, options.signal)
   }
 
-  const reason = lastError instanceof Error ? lastError.message : String(lastError ?? 'no response')
+  const reason = lastError instanceof Error
+    ? lastError.message
+    : String(lastError ?? 'no response')
   let detail = ''
   if (options.diagnoseDns) {
     const hostname = new URL(url).hostname

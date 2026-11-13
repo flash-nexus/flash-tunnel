@@ -54,9 +54,19 @@ describe('adapterRegistry', () => {
       kind: 'tunnel',
       id: 'built',
       apiVersion: 1,
-      capabilities: { modes: ['quick'], publicHostname: 'assigned', requiresDns: false, concurrent: true },
+      capabilities: {
+        modes: ['quick'],
+        publicHostname: 'assigned',
+        requiresDns: false,
+        concurrent: true
+      },
       preflight: async () => {},
-      provision: async () => ({ provider: 'built', tunnelId: 't', name: 'n', secrets: {} }),
+      provision: async () => ({
+        provider: 'built',
+        tunnelId: 't',
+        name: 'n',
+        secrets: {}
+      }),
       start: async () => {},
       waitReady: async () => ({ state: 'connected', connections: 1 }),
       stop: async () => {},
@@ -66,9 +76,23 @@ describe('adapterRegistry', () => {
       kind: 'dns',
       id: 'built-dns',
       apiVersion: 1,
-      capabilities: { recordTypes: ['CNAME'], proxied: true, ttl: true, comment: true, lookupByName: true },
+      capabilities: {
+        recordTypes: ['CNAME'],
+        proxied: true,
+        ttl: true,
+        comment: true,
+        lookupByName: true
+      },
       preflight: async () => {},
-      ensure: async () => ({ provider: 'built-dns', zoneId: 'z', recordId: 'r', name: 'n', type: 'CNAME', content: 'c', proxied: true }),
+      ensure: async () => ({
+        provider: 'built-dns',
+        zoneId: 'z',
+        recordId: 'r',
+        name: 'n',
+        type: 'CNAME',
+        content: 'c',
+        proxied: true
+      }),
       remove: async () => {},
       find: async () => []
     }))

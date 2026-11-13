@@ -49,7 +49,9 @@ export class StepUi {
 
     const startedAt = this.startedAt.get(event.id) ?? Date.now()
     const duration = event.durationMs ?? Date.now() - startedAt
-    const text = `${label}${event.detail ? `  ${event.detail}` : ''}`
+    const text = `${label}${event.detail
+      ? `  ${event.detail}`
+      : ''}`
     this.finish(event.status === 'ok', text, duration)
   }
 
@@ -90,7 +92,9 @@ export class StepUi {
       return
     }
 
-    const symbol = ok ? theme.ok(symbols.ok) : theme.err(symbols.fail)
+    const symbol = ok
+      ? theme.ok(symbols.ok)
+      : theme.err(symbols.fail)
     this.reporter.log(`${symbol} ${text}  ${suffix}\n`)
   }
 }

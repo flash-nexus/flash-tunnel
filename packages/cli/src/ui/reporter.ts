@@ -85,20 +85,28 @@ export class Reporter {
   }
 
   error(error: unknown, code?: string, hint?: string): void {
-    const message = error instanceof Error ? error.message : String(error)
+    const message = error instanceof Error
+      ? error.message
+      : String(error)
     const effectiveCode = code ?? (error as { code?: string } | undefined)?.code
 
     if (this.json) {
       this.event({
         type: 'error',
-        ...(effectiveCode ? { code: effectiveCode } : {}),
+        ...(effectiveCode
+          ? { code: effectiveCode }
+          : {}),
         message,
-        ...(hint ? { hint } : {})
+        ...(hint
+          ? { hint }
+          : {})
       })
       return
     }
 
-    const codeSuffix = effectiveCode ? ` ${themeStderr.dim(`[${effectiveCode}]`)}` : ''
+    const codeSuffix = effectiveCode
+      ? ` ${themeStderr.dim(`[${effectiveCode}]`)}`
+      : ''
     process.stderr.write(`${themeStderr.err(symbols.fail)} ${message}${codeSuffix}\n`)
     if (hint) {
       process.stderr.write(`  ${themeStderr.dim('hint')} ${hint}\n`)
@@ -114,7 +122,9 @@ export class Reporter {
       cwd: this.cwd,
       shell: true,
       // Keep stdout machine-readable in --json mode.
-      stdio: this.json ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+      stdio: this.json
+        ? ['ignore', 'pipe', 'pipe']
+        : 'inherit',
       windowsHide: true,
       env: {
         ...process.env,
@@ -122,8 +132,12 @@ export class Reporter {
         FLASH_TUNNEL_LOCAL_URL: payload.localUrl,
         FLASH_TUNNEL_SESSION_ID: payload.sessionId,
         FLASH_TUNNEL_TUNNEL_ID: payload.tunnelId,
-        ...(payload.hostname ? { FLASH_TUNNEL_HOSTNAME: payload.hostname } : {}),
-        ...(payload.expiresAt ? { FLASH_TUNNEL_EXPIRES_AT: payload.expiresAt } : {})
+        ...(payload.hostname
+          ? { FLASH_TUNNEL_HOSTNAME: payload.hostname }
+          : {}),
+        ...(payload.expiresAt
+          ? { FLASH_TUNNEL_EXPIRES_AT: payload.expiresAt }
+          : {})
       }
     })
 

@@ -6,5 +6,19 @@ export const unicode = process.platform !== 'win32'
   || process.env.TERM_PROGRAM === 'vscode'
 
 export const symbols = unicode
-  ? { ok: '✔', fail: '✖', warn: '⚠', info: 'ℹ', bullet: '·', arrow: '→' }
-  : { ok: '√', fail: '×', warn: '!', info: 'i', bullet: '-', arrow: '->' }
+  ? {
+      ok: '✔',
+      fail: '✖',
+      warn: '⚠',
+      info: 'ℹ',
+      bullet: '·',
+      arrow: '→'
+    }
+  : {
+      ok: '√',
+      fail: '×',
+      warn: '!',
+      info: 'i',
+      bullet: '-',
+      arrow: '->'
+    }

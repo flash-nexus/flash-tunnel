@@ -70,8 +70,12 @@ describe('resolveConfig', () => {
 
   it('renders the hostname with the subdomain template', () => {
     const resolved = resolve(
-      { domain: { zone: 'example.com', subdomain: 'web-{project}' } },
-      { cli: { sessionId: 'ft_test_1' } }
+      {
+        domain: { zone: 'example.com', subdomain: 'web-{project}' }
+      },
+      {
+        cli: { sessionId: 'ft_test_1' }
+      }
     )
 
     expect(resolved.values.domain.subdomain).toBe('web-{project}')
@@ -81,8 +85,12 @@ describe('resolveConfig', () => {
 
   it('uses an explicit hostname over the template', () => {
     const resolved = resolve(
-      { domain: { zone: 'example.com' } },
-      { env: { FLASH_TUNNEL_HOSTNAME: 'pinned.example.com' } }
+      {
+        domain: { zone: 'example.com' }
+      },
+      {
+        env: { FLASH_TUNNEL_HOSTNAME: 'pinned.example.com' }
+      }
     )
 
     expect(resolved.values.domain.hostname).toBe('pinned.example.com')
@@ -91,8 +99,12 @@ describe('resolveConfig', () => {
 
   it('resolves relative server paths against the config directory', () => {
     const resolved = resolve(
-      { server: { cwd: 'apps/web', dir: 'dist' } },
-      { configFile: join(cwd, 'flash-tunnel.ts') }
+      {
+        server: { cwd: 'apps/web', dir: 'dist' }
+      },
+      {
+        configFile: join(cwd, 'flash-tunnel.ts')
+      }
     )
 
     expect(resolved.values.server.cwd).toBe(configDir)
@@ -100,36 +112,59 @@ describe('resolveConfig', () => {
   })
 
   it('defaults server.cwd to the config directory', () => {
-    const resolved = resolve({}, { configFile: join(configDir, 'flash-tunnel.ts') })
+    const resolved = resolve({}, {
+      configFile: join(configDir, 'flash-tunnel.ts')
+    })
     expect(resolved.values.server.cwd).toBe(configDir)
   })
 
   it('supports static and attach cli modes', () => {
-    const staticResolved = resolve({}, { cli: { static: 'dist' } })
+    const staticResolved = resolve({}, {
+      cli: { static: 'dist' }
+    })
     expect(staticResolved.values.server.dir).toBe(join(cwd, 'dist'))
     expect(staticResolved.sources['server.dir']?.source).toBe('cli')
 
-    expect(() => resolve({}, { cli: { static: 'dist', url: 'http://127.0.0.1:3000' } }))
+    expect(() => resolve({}, {
+      cli: { static: 'dist', url: 'http://127.0.0.1:3000' }
+    }))
       .toThrow(/cannot be used together/)
-    expect(() => resolve({}, { cli: { attach: true } })).toThrow(/--attach requires --url/)
-    expect(() => resolve({ server: { command: 'pnpm dev' } }, { cli: { attach: true, url: 'http://127.0.0.1:3000' } }))
+    expect(() => resolve({}, {
+      cli: { attach: true }
+    })).toThrow(/--attach requires --url/)
+    expect(() => resolve({
+      server: { command: 'pnpm dev' }
+    }, {
+      cli: { attach: true, url: 'http://127.0.0.1:3000' }
+    }))
       .toThrow(/--attach cannot be used with server.command/)
   })
 
   it('guards multi-level subdomains behind the cli flag', () => {
-    expect(() => resolve({ domain: { zone: 'example.com', subdomain: 'a.b' } }))
+    expect(() => resolve({
+      domain: { zone: 'example.com', subdomain: 'a.b' }
+    }))
       .toThrow(/Multi-level subdomains/)
 
     const resolved = resolve(
-      { domain: { zone: 'example.com', subdomain: 'a.b' } },
-      { cli: { allowMultilevel: true } }
+      {
+        domain: { zone: 'example.com', subdomain: 'a.b' }
+      },
+      {
+        cli: { allowMultilevel: true }
+      }
     )
     expect(resolved.values.domain.hostname).toBe('a.b.example.com')
   })
 
   it('records detected server values', () => {
     const resolved = resolve({}, {
-      detected: { command: 'pnpm dev', port: 5173, framework: 'vite', reason: 'scripts.dev' }
+      detected: {
+        command: 'pnpm dev',
+        port: 5173,
+        framework: 'vite',
+        reason: 'scripts.dev'
+      }
     })
 
     expect(resolved.values.server.command).toBe('pnpm dev')
@@ -150,20 +185,32 @@ describe('resolveConfig', () => {
   })
 
   it('rejects conflicting server modes', () => {
-    expect(() => resolve({ server: { url: 'http://127.0.0.1:3000', dir: 'dist' } }))
+    expect(() => resolve({
+      server: { url: 'http://127.0.0.1:3000', dir: 'dist' }
+    }))
       .toThrow(FlashTunnelError)
-    expect(() => resolve({ server: { command: 'pnpm dev', dir: 'dist' } }))
+    expect(() => resolve({
+      server: { command: 'pnpm dev', dir: 'dist' }
+    }))
       .toThrow(/cannot be used together/)
   })
 
   it('rejects invalid values with a config error', () => {
-    expect(() => resolve({ tunnel: { mode: 'bogus' as 'named' } })).toThrow(/tunnel\.mode/)
-    expect(() => resolve({ server: { port: 70_000 } })).toThrow(/server\.port/)
-    expect(() => resolve({ server: { timeout: -1 } })).toThrow(/server\.timeout/)
+    expect(() => resolve({
+      tunnel: { mode: 'bogus' as 'named' }
+    })).toThrow(/tunnel\.mode/)
+    expect(() => resolve({
+      server: { port: 70_000 }
+    })).toThrow(/server\.port/)
+    expect(() => resolve({
+      server: { timeout: -1 }
+    })).toThrow(/server\.timeout/)
     expect(() => resolve({ autoStopAfter: 'soon' })).toThrow(/autoStopAfter/)
 
     try {
-      resolve({ server: { port: 70_000 } })
+      resolve({
+        server: { port: 70_000 }
+      })
     }
     catch (error) {
       expect(error).toBeInstanceOf(FlashTunnelError)

@@ -22,7 +22,12 @@ function createState(overrides: Partial<SessionState>): SessionState {
     heartbeatAt: now,
     state: 'running',
     server: { cwd: project, startedByUs: true },
-    cleanup: { required: false, attempts: 0, inProgress: false, kept: false },
+    cleanup: {
+      required: false,
+      attempts: 0,
+      inProgress: false,
+      kept: false
+    },
     ...overrides
   }
 }
@@ -61,7 +66,12 @@ describe('findStaleSessions', () => {
   it('does not auto-clean kept sessions', async () => {
     await writeSessionState(createState({
       sessionId: 'ft_kept',
-      cleanup: { required: false, attempts: 0, inProgress: false, kept: true }
+      cleanup: {
+        required: false,
+        attempts: 0,
+        inProgress: false,
+        kept: true
+      }
     }))
 
     const result = await findStaleSessions(project)

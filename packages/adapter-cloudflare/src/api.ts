@@ -86,7 +86,9 @@ export class CloudflareApi {
           'authorization': `Bearer ${this.apiToken}`,
           'content-type': 'application/json'
         },
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined
+          ? undefined
+          : JSON.stringify(body),
         signal: AbortSignal.timeout(15_000)
       })
     }
@@ -146,7 +148,9 @@ export class CloudflareApi {
     throw new AdapterError('Cannot determine the Cloudflare account id', {
       code: 'ACCOUNT_NOT_FOUND',
       hint: 'Set CLOUDFLARE_ACCOUNT_ID or providers.cloudflare.accountId',
-      details: { accounts: accounts.map(account => account.name) }
+      details: {
+        accounts: accounts.map(account => account.name)
+      }
     })
   }
 

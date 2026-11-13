@@ -22,7 +22,9 @@ export function createFetcher(handler: FetchHandler, calls: FetchCall[] = []): t
     const call: FetchCall = {
       url,
       method: init?.method ?? 'GET',
-      body: typeof init?.body === 'string' ? init.body : undefined
+      body: typeof init?.body === 'string'
+        ? init.body
+        : undefined
     }
     calls.push(call)
     return handler({

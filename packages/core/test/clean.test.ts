@@ -37,7 +37,12 @@ function createState(overrides: Partial<SessionState> = {}): SessionState {
       mode: 'named',
       accountId: 'acc-1'
     },
-    cleanup: { required: false, attempts: 0, inProgress: false, kept: false },
+    cleanup: {
+      required: false,
+      attempts: 0,
+      inProgress: false,
+      kept: false
+    },
     ...overrides
   }
 }

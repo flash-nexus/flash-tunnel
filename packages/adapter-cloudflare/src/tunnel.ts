@@ -221,7 +221,9 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
         {
           hostname: spec.hostname,
           service: spec.localUrl,
-          ...(originRequest ? { originRequest } : {})
+          ...(originRequest
+            ? { originRequest }
+            : {})
         },
         { service: 'http_status:404' }
       ]
@@ -274,7 +276,12 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
 
       const args = named
         ? ['--no-autoupdate', 'tunnel', 'run']
-        : ['--no-autoupdate', 'tunnel', '--url', localUrl]
+        : [
+            '--no-autoupdate',
+            'tunnel',
+            '--url',
+            localUrl
+          ]
 
       const invocation = shellInvocation(cloudflaredPath, args)
       const child = spawn(invocation.command, invocation.args, {
@@ -289,7 +296,10 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
 
       childProcess = child
       if (child.pid) {
-        handle.meta = { ...handle.meta, processPid: String(child.pid) }
+        handle.meta = {
+          ...handle.meta,
+          processPid: String(child.pid)
+        }
       }
       child.stderr?.on('data', (chunk: Buffer) => capture(chunk, hooks))
       child.stdout?.on('data', (chunk: Buffer) => capture(chunk, hooks))
@@ -326,7 +336,9 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
           catch (error) {
             if (exitInfo) {
               throw new AdapterError(
-                `cloudflared exited before the tunnel was ready (code ${exitInfo.code ?? 'null'})${output.length ? `\n${output.slice(-10).join('\n')}` : ''}`,
+                `cloudflared exited before the tunnel was ready (code ${exitInfo.code ?? 'null'})${output.length
+                  ? `\n${output.slice(-10).join('\n')}`
+                  : ''}`,
                 { code: 'TUNNEL_NOT_CONNECTED', retriable: true, cause: error }
               )
             }
@@ -339,7 +351,9 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
 
         if (exitInfo) {
           throw new AdapterError(
-            `cloudflared exited before the tunnel was ready (code ${exitInfo.code ?? 'null'})${output.length ? `\n${output.slice(-10).join('\n')}` : ''}`,
+            `cloudflared exited before the tunnel was ready (code ${exitInfo.code ?? 'null'})${output.length
+              ? `\n${output.slice(-10).join('\n')}`
+              : ''}`,
             { code: 'TUNNEL_NOT_CONNECTED', retriable: true }
           )
         }
@@ -362,7 +376,12 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
       }
 
       if (process.platform === 'win32') {
-        spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
+        spawnSync('taskkill', [
+          '/PID',
+          String(child.pid),
+          '/T',
+          '/F'
+        ], {
           stdio: 'ignore',
           windowsHide: true
         })
@@ -431,7 +450,9 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
       const tunnel = await client.getTunnel(handle.meta.accountId, handle.tunnelId)
       const connections = tunnel.connections?.length ?? 0
       return {
-        state: tunnel.status === 'healthy' ? 'connected' : 'starting',
+        state: tunnel.status === 'healthy'
+          ? 'connected'
+          : 'starting',
         connections,
         publicUrl: handle.publicUrl
       }

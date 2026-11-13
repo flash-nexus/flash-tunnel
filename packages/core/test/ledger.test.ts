@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { ResourceLedger } from '../src'
 
-const origin = { sessionId: 'ft_1', createdAt: Date.now(), version: '0.0.0' }
+const origin = {
+  sessionId: 'ft_1',
+  createdAt: Date.now(),
+  version: '0.0.0'
+}
 
 describe('resourceLedger', () => {
   it('disposes entries in reverse order', async () => {
@@ -31,7 +35,14 @@ describe('resourceLedger', () => {
 
   it('keeps entries that are not owned for the caller to skip', () => {
     const ledger = new ResourceLedger()
-    ledger.add({ kind: 'server', provider: 'local', ref: {}, origin, owned: false, dispose: async () => {} })
+    ledger.add({
+      kind: 'server',
+      provider: 'local',
+      ref: {},
+      origin,
+      owned: false,
+      dispose: async () => {}
+    })
 
     expect(ledger.snapshot()[0]?.owned).toBe(false)
     expect(ledger.size).toBe(1)

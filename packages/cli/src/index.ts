@@ -132,7 +132,9 @@ let pendingReapSessionId: string | undefined
 let exitReaperInstalled = false
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
+  return error instanceof Error
+    ? error.message
+    : String(error)
 }
 
 function readVersion(): string {
@@ -188,7 +190,9 @@ function waitForStop(session: PreviewSession, quit?: Promise<void>): Promise<Sto
     }
 
     function onUnhandledRejection(reason: unknown): void {
-      finish('fatal', reason instanceof Error ? reason : new Error(String(reason)))
+      finish('fatal', reason instanceof Error
+        ? reason
+        : new Error(String(reason)))
     }
 
     process.once('SIGINT', onSigint)
@@ -219,7 +223,9 @@ function waitForStop(session: PreviewSession, quit?: Promise<void>): Promise<Sto
 function installInterruptEscalation(): () => void {
   const onSignal = (signal: NodeJS.Signals): void => {
     process.stderr.write(`\n${theme.warn(symbols.warn)} forced exit (${signal}); leftover resources will be cleaned by the next run\n`)
-    process.exit(signal === 'SIGINT' ? 130 : 143)
+    process.exit(signal === 'SIGINT'
+      ? 130
+      : 143)
   }
 
   process.once('SIGINT', onSignal)
@@ -250,7 +256,15 @@ function installSessionWatchdog(sessionId: string): void {
   try {
     const child = spawn(
       process.execPath,
-      [entry, '__reap', '--session', sessionId, '--force', '--wait-pid', String(process.pid)],
+      [
+        entry,
+        '__reap',
+        '--session',
+        sessionId,
+        '--force',
+        '--wait-pid',
+        String(process.pid)
+      ],
       {
         detached: true,
         stdio: 'ignore',
@@ -287,7 +301,13 @@ function installExitReaper(): void {
       return
     }
 
-    spawnSync(process.execPath, [entry, '__reap', '--session', sessionId, '--force'], {
+    spawnSync(process.execPath, [
+      entry,
+      '__reap',
+      '--session',
+      sessionId,
+      '--force'
+    ], {
       stdio: 'ignore',
       timeout: 20_000,
       windowsHide: true
@@ -418,7 +438,9 @@ function printEffectiveConfig(resolved: ResolvedConfig, reporter: Reporter): voi
     return
   }
 
-  reporter.human(`${theme.bold('Effective configuration')}${resolved.configFile ? `  ${theme.dim(resolved.configFile)}` : ''}\n`)
+  reporter.human(`${theme.bold('Effective configuration')}${resolved.configFile
+    ? `  ${theme.dim(resolved.configFile)}`
+    : ''}\n`)
 
   const rows: Array<[string, string | number | undefined]> = [
     ['domain.zone', resolved.values.domain.zone],
@@ -437,13 +459,20 @@ function printEffectiveConfig(resolved: ResolvedConfig, reporter: Reporter): voi
     ['providers.cloudflare.accountId', resolved.values.providers.cloudflare.accountId],
     ['providers.cloudflare.zoneId', resolved.values.providers.cloudflare.zoneId],
     ['providers.cloudflare.cloudflaredPath', resolved.values.providers.cloudflare.cloudflaredPath],
-    ['autoStopAfter', resolved.values.autoStopAfter === undefined ? 'off' : formatDuration(resolved.values.autoStopAfter)]
+    [
+      'autoStopAfter',
+      resolved.values.autoStopAfter === undefined
+        ? 'off'
+        : formatDuration(resolved.values.autoStopAfter)
+    ]
   ]
 
   for (const [key, value] of rows) {
     const info = resolved.sources[key]
     const source = info
-      ? theme.dim(`(${info.source}${info.note ? `: ${info.note}` : ''})`)
+      ? theme.dim(`(${info.source}${info.note
+          ? `: ${info.note}`
+          : ''})`)
       : ''
     reporter.human(`  ${key.padEnd(32)} ${String(value ?? '-').padEnd(28)} ${source}\n`)
   }
@@ -579,7 +608,11 @@ async function createPreviewPlan(
     command: options.command,
     port: options.port,
     url: options.url,
-    static: options.static === true ? true : typeof options.static === 'string' ? options.static : undefined,
+    static: options.static === true
+      ? true
+      : typeof options.static === 'string'
+        ? options.static
+        : undefined,
     attach: options.attach,
     allowMultilevel: options.allowMultilevel,
     autoStop: options.autoStop
@@ -657,8 +690,16 @@ async function createPreviewPlan(
         }
 
         const choice = await chooseWorkspace(candidates)
-        config = { ...config, server: { ...config.server, cwd: choice.cwd } }
-        preliminary = resolveConfig({ cwd, config, configFile: source, cli: cliConfig })
+        config = {
+          ...config,
+          server: { ...config.server, cwd: choice.cwd }
+        }
+        preliminary = resolveConfig({
+          cwd,
+          config,
+          configFile: source,
+          cli: cliConfig
+        })
 
         try {
           detected = detectPreviewServer(cwd, preliminary.values.server, options)
@@ -708,7 +749,9 @@ async function createPreviewPlan(
     configFile: source,
     cli: cliConfig,
     detected,
-    ...(inferredZone ? { inferredZone } : {})
+    ...(inferredZone
+      ? { inferredZone }
+      : {})
   })
 
   if (detectionError) {
@@ -745,7 +788,9 @@ async function createPreviewPlan(
     })
   }
 
-  const hostname = mode === 'named' ? resolved.values.domain.hostname : undefined
+  const hostname = mode === 'named'
+    ? resolved.values.domain.hostname
+    : undefined
   const autoStopAfterMs = resolved.values.autoStopAfter
   const effectiveConfig = buildEffectiveConfig(config, resolved)
   if (reusedPort) {
@@ -843,7 +888,9 @@ async function runPreviewSession(
   const events = wireEvents(reporter)
 
   const steps = new StepUi(reporter, {
-    enabled: options.spinner === false ? false : undefined
+    enabled: options.spinner === false
+      ? false
+      : undefined
   })
   events.on('step', payload => steps.handle(payload))
 
@@ -888,7 +935,9 @@ async function runPreviewSession(
     steps.stop()
 
     if (interrupted) {
-      process.exitCode = interrupted === 'SIGINT' ? 130 : 143
+      process.exitCode = interrupted === 'SIGINT'
+        ? 130
+        : 143
       return
     }
     throw error
@@ -968,7 +1017,9 @@ function wireEvents(reporter: Reporter): Emitter<FlashTunnelEvents> {
     type: 'cleanup:step',
     kind: payload.kind,
     status: payload.status,
-    ...(payload.detail ? { detail: payload.detail } : {})
+    ...(payload.detail
+      ? { detail: payload.detail }
+      : {})
   }))
   events.on('cleanup:done', payload => reporter.event({
     type: 'cleanup',
@@ -1119,7 +1170,9 @@ function applyStopOutcome(outcome: StopOutcome, reporter: Reporter): void {
     process.exitCode = 143
   }
   else {
-    reporter.log(`${theme.dim(reason === 'auto-stop' ? 'Auto-stop reached; cleaning up...' : 'Stopping...')}\n`)
+    reporter.log(`${theme.dim(reason === 'auto-stop'
+      ? 'Auto-stop reached; cleaning up...'
+      : 'Stopping...')}\n`)
   }
 }
 
@@ -1156,13 +1209,17 @@ async function stopPreviewSession(session: PreviewSession, reporter: Reporter): 
 
 function formatSession(state: SessionState): string {
   const target = state.dns?.hostname ?? state.tunnel?.publicUrl ?? '(none)'
-  const alive = isProcessAlive(state.pid) ? 'alive' : 'dead'
+  const alive = isProcessAlive(state.pid)
+    ? 'alive'
+    : 'dead'
   return `${state.sessionId}  ${state.state}  ${alive}  ${state.projectRoot}  ${target}`
 }
 
 async function runClean(options: CleanOptions, reporter: Reporter): Promise<void> {
   if (!options.session && !options.stale && !options.all) {
-    const projectRoot = options.project ? resolve(options.project) : undefined
+    const projectRoot = options.project
+      ? resolve(options.project)
+      : undefined
     const states = (await listSessionStates())
       .filter(state => !projectRoot || sameProject(state, projectRoot))
 
@@ -1235,12 +1292,16 @@ async function runClean(options: CleanOptions, reporter: Reporter): Promise<void
 async function cleanSessionsFor(options: CleanOptions): Promise<CleanSessionResult[]> {
   return cleanSessions({
     sessionId: options.session,
-    projectRoot: options.project ? resolve(options.project) : undefined,
+    projectRoot: options.project
+      ? resolve(options.project)
+      : undefined,
     staleOnly: options.stale,
     all: options.all,
     force: options.force,
     dryRun: options.dryRun,
-    cleaner: options.dryRun ? undefined : createCleaner()
+    cleaner: options.dryRun
+      ? undefined
+      : createCleaner()
   })
 }
 
@@ -1350,7 +1411,10 @@ async function runReapCommand(sessionId: string, force: boolean, waitPid?: numbe
       await waitForPidExit(waitPid)
     }
 
-    const result = await reapSession(sessionId, { cleaner: createCleaner(), force })
+    const result = await reapSession(sessionId, {
+      cleaner: createCleaner(),
+      force
+    })
     if (result.status === 'failed') {
       process.stderr.write(`${theme.err(symbols.fail)} reaper could not clean ${sessionId}: ${result.reasons.join('; ')}\n`)
       process.exitCode = 8
@@ -1364,7 +1428,9 @@ async function runReapCommand(sessionId: string, force: boolean, waitPid?: numbe
 
 function findReapSessionId(argv: string[]): string | undefined {
   const index = argv.indexOf('--session')
-  return index >= 0 ? argv[index + 1] : undefined
+  return index >= 0
+    ? argv[index + 1]
+    : undefined
 }
 
 function findNumericArgument(argv: string[], name: string): number | undefined {
@@ -1373,7 +1439,9 @@ function findNumericArgument(argv: string[], name: string): number | undefined {
     return undefined
   }
   const value = Number(argv[index + 1])
-  return Number.isInteger(value) && value > 0 ? value : undefined
+  return Number.isInteger(value) && value > 0
+    ? value
+    : undefined
 }
 
 export async function runCli(argv: string[] = process.argv): Promise<void> {

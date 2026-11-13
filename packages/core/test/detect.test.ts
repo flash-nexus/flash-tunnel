@@ -79,7 +79,9 @@ describe('detectServer', () => {
 
   it('detects the package manager from the lockfile', async () => {
     const cwd = await createFixture({
-      'package.json': JSON.stringify({ scripts: { dev: 'vite' } }),
+      'package.json': JSON.stringify({
+        scripts: { dev: 'vite' }
+      }),
       'yarn.lock': ''
     })
 
@@ -87,13 +89,18 @@ describe('detectServer', () => {
   })
 
   it.each([
-    ['package.json', JSON.stringify({ packageManager: 'pnpm@12.14.0' })],
+    [
+      'package.json',
+      JSON.stringify({ packageManager: 'pnpm@12.14.0' })
+    ],
     ['pnpm-lock.yaml', '']
   ])('inherits the package manager from a parent %s', async (file, content) => {
     const cwd = await createFixture({
       '.git': '',
       [file]: content,
-      'apps/web/package.json': JSON.stringify({ scripts: { dev: 'vite' } })
+      'apps/web/package.json': JSON.stringify({
+        scripts: { dev: 'vite' }
+      })
     })
     const app = join(cwd, 'apps/web')
 
@@ -110,7 +117,9 @@ describe('detectServer', () => {
       '.git': '',
       'package.json': JSON.stringify({ packageManager: 'pnpm@12.14.0' }),
       'apps/web/yarn.lock': '',
-      'apps/web/package.json': JSON.stringify({ scripts: { dev: 'vite' } })
+      'apps/web/package.json': JSON.stringify({
+        scripts: { dev: 'vite' }
+      })
     })
 
     expect(detectServer(join(cwd, 'apps/web'))).toMatchObject({
@@ -122,12 +131,19 @@ describe('detectServer', () => {
   it.each([
     ['.git', ''],
     ['pnpm-workspace.yaml', 'packages: []'],
-    ['package.json', JSON.stringify({ workspaces: ['apps/*'] })]
+    [
+      'package.json',
+      JSON.stringify({
+        workspaces: ['apps/*']
+      })
+    ]
   ])('does not inherit a manager from above a %s boundary', async (file, content) => {
     const cwd = await createFixture({
       'package.json': JSON.stringify({ packageManager: 'bun@1.0.0' }),
       [`project/${file}`]: content,
-      'project/apps/web/package.json': JSON.stringify({ scripts: { dev: 'vite' } })
+      'project/apps/web/package.json': JSON.stringify({
+        scripts: { dev: 'vite' }
+      })
     })
 
     expect(detectServer(join(cwd, 'project/apps/web'))).toMatchObject({ packageManager: 'npm' })
@@ -185,7 +201,11 @@ describe('detectServer', () => {
   })
 
   it('marks the port of an unknown framework as an estimate', async () => {
-    const cwd = await createFixture({ 'package.json': JSON.stringify({ scripts: { dev: 'node app.mjs' } }) })
+    const cwd = await createFixture({
+      'package.json': JSON.stringify({
+        scripts: { dev: 'node app.mjs' }
+      })
+    })
     expect(detectServer(cwd)).toMatchObject({ port: 3000, portSource: 'default' })
   })
 

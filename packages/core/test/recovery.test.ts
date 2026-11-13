@@ -37,7 +37,10 @@ async function waitForReady(process: ChildProcess): Promise<number[]> {
       const match = /READY \S+ (\d+) (\d+)/.exec(output)
       if (match) {
         clearTimeout(timer)
-        resolveReady([Number(match[1]), Number(match[2])])
+        resolveReady([
+          Number(match[1]),
+          Number(match[2])
+        ])
       }
     })
     process.stderr?.on('data', (chunk: Buffer) => {
@@ -82,7 +85,10 @@ afterEach(async () => {
 
 describe.skipIf(!built)('signal recovery', () => {
   it.skipIf(process.platform === 'win32')('cleans up on a real SIGINT', async () => {
-    child = spawn(process.execPath, [fileURLToPath(fixture), project], {
+    child = spawn(process.execPath, [
+      fileURLToPath(fixture),
+      project
+    ], {
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
       env: { ...process.env, FLASH_TUNNEL_HOME: home, GRACEFUL: '1' }
@@ -111,7 +117,10 @@ describe.skipIf(!built)('signal recovery', () => {
 
 describe.skipIf(!built)('kill -9 recovery', () => {
   it('reaps a session whose process was killed', async () => {
-    child = spawn(process.execPath, [fileURLToPath(fixture), project], {
+    child = spawn(process.execPath, [
+      fileURLToPath(fixture),
+      project
+    ], {
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
       env: { ...process.env, FLASH_TUNNEL_HOME: home }

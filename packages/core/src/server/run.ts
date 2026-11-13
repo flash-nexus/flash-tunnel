@@ -16,7 +16,9 @@ const URL_PATTERN = /https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(?:
 const OUTPUT_LIMIT = 200
 
 function normalizeUrl(raw: string): string {
-  const withScheme = raw.startsWith('http') ? raw : `http://${raw}`
+  const withScheme = raw.startsWith('http')
+    ? raw
+    : `http://${raw}`
   const url = new URL(withScheme)
 
   if (url.hostname === '0.0.0.0' || url.hostname === '[::1]' || url.hostname === '::1') {
@@ -25,12 +27,16 @@ function normalizeUrl(raw: string): string {
 
   url.hash = ''
   const output = url.toString()
-  return output.endsWith('/') ? output.slice(0, -1) : output
+  return output.endsWith('/')
+    ? output.slice(0, -1)
+    : output
 }
 
 function urlPort(raw: string): number {
   const url = new URL(raw)
-  return Number(url.port || (url.protocol === 'https:' ? 443 : 80))
+  return Number(url.port || (url.protocol === 'https:'
+    ? 443
+    : 80))
 }
 
 async function reachable(url: string): Promise<boolean> {

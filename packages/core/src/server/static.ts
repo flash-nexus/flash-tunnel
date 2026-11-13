@@ -34,7 +34,9 @@ function listen(server: Server, port: number): Promise<number> {
     const onListening = (): void => {
       server.off('error', onError)
       const address = server.address()
-      resolvePort(typeof address === 'object' && address ? address.port : port)
+      resolvePort(typeof address === 'object' && address
+        ? address.port
+        : port)
     }
 
     server.once('error', onError)

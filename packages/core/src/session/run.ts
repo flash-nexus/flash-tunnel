@@ -136,7 +136,9 @@ function createLogger(onLog?: StartPreviewSessionOptions['onLog']): AdapterLogge
 }
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
+  return error instanceof Error
+    ? error.message
+    : String(error)
 }
 
 function withTimeout<T>(work: Promise<T>, timeoutMs: number, label: string): Promise<T> {
@@ -212,7 +214,12 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
       state: 'starting',
       configSource: options.configSource,
       server: { cwd, startedByUs: false },
-      cleanup: { required: false, attempts: 0, inProgress: false, kept: false }
+      cleanup: {
+        required: false,
+        attempts: 0,
+        inProgress: false,
+        kept: false
+      }
     }
     await writeSessionState(state)
     events.emit('state', { from: 'idle', to: 'starting' })
@@ -238,7 +245,9 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
       id,
       status,
       detail,
-      durationMs: status === 'start' ? undefined : now - (startedAt ?? now)
+      durationMs: status === 'start'
+        ? undefined
+        : now - (startedAt ?? now)
     })
     if (status !== 'start' && activeStep === id) {
       activeStep = undefined
@@ -436,7 +445,11 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
       }
       catch (error) {
         // Draining is best-effort; deprovision retries force-clean connections.
-        events.emit('cleanup:step', { kind: 'tunnel.drain', status: 'skip', detail: errorMessage(error) })
+        events.emit('cleanup:step', {
+          kind: 'tunnel.drain',
+          status: 'skip',
+          detail: errorMessage(error)
+        })
       }
     }
 
@@ -637,7 +650,11 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
     ledger.add({
       kind: 'tunnel-process',
       provider: startedHandle.provider,
-      ref: { pid: Number.isInteger(tunnelPid) ? tunnelPid : undefined },
+      ref: {
+        pid: Number.isInteger(tunnelPid)
+          ? tunnelPid
+          : undefined
+      },
       origin,
       owned: true,
       dispose: () => adapters.tunnel.stop(ctx, startedHandle)
@@ -645,7 +662,9 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
 
     if (state) {
       if (Number.isInteger(tunnelPid) && tunnelPid > 0) {
-        state.processes = [{ kind: 'cloudflared', pid: tunnelPid }]
+        state.processes = [
+          { kind: 'cloudflared', pid: tunnelPid }
+        ]
         await saveState()
       }
     }
@@ -684,7 +703,12 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
 
       throw new FlashTunnelError(
         `The public URL did not answer: ${errorMessage(error)}`,
-        { code: 'PUBLIC_VERIFY_FAILED', exitCode: 7, hint: 'Check cloudflared connectivity and try again', cause: error }
+        {
+          code: 'PUBLIC_VERIFY_FAILED',
+          exitCode: 7,
+          hint: 'Check cloudflared connectivity and try again',
+          cause: error
+        }
       )
     }
     emitStep('verify', 'ok', `HTTP ${verified.status}`)

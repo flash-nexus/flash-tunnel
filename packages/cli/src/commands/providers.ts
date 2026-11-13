@@ -39,7 +39,9 @@ export function runProviders(reporter: Reporter): void {
 
   reporter.human(`${theme.bold('Tunnel adapters')}\n`)
   for (const provider of tunnels) {
-    const modes = Array.isArray(provider.capabilities.modes) ? provider.capabilities.modes.join(', ') : 'unknown'
+    const modes = Array.isArray(provider.capabilities.modes)
+      ? provider.capabilities.modes.join(', ')
+      : 'unknown'
     const hostname = String(provider.capabilities.publicHostname ?? 'unknown')
     reporter.human(`  ${theme.accent(provider.id)}  modes: ${modes}  public hostname: ${hostname}\n`)
   }
@@ -53,6 +55,8 @@ export function runProviders(reporter: Reporter): void {
       provider.capabilities.proxied ? 'proxied' : undefined,
       provider.capabilities.comment ? 'comment' : undefined
     ].filter(Boolean).join(' ')
-    reporter.human(`  ${theme.accent(provider.id)}  records: ${records}${flags ? `  ${flags}` : ''}\n`)
+    reporter.human(`  ${theme.accent(provider.id)}  records: ${records}${flags
+      ? `  ${flags}`
+      : ''}\n`)
   }
 }

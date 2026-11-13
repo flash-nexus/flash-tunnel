@@ -80,7 +80,9 @@ function planActions(state: SessionState): string[] {
 }
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
+  return error instanceof Error
+    ? error.message
+    : String(error)
 }
 
 function matches(state: SessionState, options: CleanSessionsOptions, now: number): boolean {

@@ -15,7 +15,12 @@ function createTunnel(capabilities: Partial<TunnelCapabilities> = {}): TunnelAda
       ...capabilities
     },
     preflight: async () => {},
-    provision: async () => ({ provider: 'fake', tunnelId: 't', name: 'n', secrets: {} }),
+    provision: async () => ({
+      provider: 'fake',
+      tunnelId: 't',
+      name: 'n',
+      secrets: {}
+    }),
     start: async () => {},
     waitReady: async () => ({ state: 'connected', connections: 1 }),
     stop: async () => {},
@@ -63,7 +68,9 @@ describe('validateAdapterCombination', () => {
 
   it('rejects an unsupported mode', () => {
     expect(() => validateAdapterCombination({
-      tunnel: createTunnel({ modes: ['named'] }),
+      tunnel: createTunnel({
+        modes: ['named']
+      }),
       dns: createDns(),
       mode: 'quick'
     })).toThrow(/does not support mode/)
@@ -78,12 +85,19 @@ describe('validateAdapterCombination', () => {
 
   it('checks record type proxying and provider affinity', () => {
     const tunnel = createTunnel({
-      dns: { type: 'CNAME', targetFrom: 'handle', proxied: true, providerAffinity: ['cloudflare'] }
+      dns: {
+        type: 'CNAME',
+        targetFrom: 'handle',
+        proxied: true,
+        providerAffinity: ['cloudflare']
+      }
     })
 
     expect(() => validateAdapterCombination({
       tunnel,
-      dns: createDns({ recordTypes: ['A'] }),
+      dns: createDns({
+        recordTypes: ['A']
+      }),
       mode: 'named'
     })).toThrow(/CNAME records/)
 
@@ -101,7 +115,10 @@ describe('validateAdapterCombination', () => {
 
     expect(() => validateAdapterCombination({
       tunnel,
-      dns: { ...createDns(), id: 'cloudflare' },
+      dns: {
+        ...createDns(),
+        id: 'cloudflare'
+      },
       mode: 'named'
     })).not.toThrow()
   })

@@ -163,7 +163,9 @@ describe('startPreviewSession', () => {
       cwd,
       config: {},
       serverPlan,
-      adapters: { tunnel: createFakeTunnel() },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick'
     })
     sessions.push(session)
@@ -177,7 +179,9 @@ describe('startPreviewSession', () => {
     await expect(startPreviewSession({
       cwd,
       config: {},
-      adapters: { tunnel: createFakeTunnel() },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick'
     })).rejects.toThrow(/No runnable script/)
 
@@ -186,7 +190,9 @@ describe('startPreviewSession', () => {
     await expect(startPreviewSession({
       cwd,
       config: {},
-      adapters: { tunnel: createFakeTunnel() },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick'
     })).rejects.toThrow(/No runnable script/)
   })
@@ -210,7 +216,9 @@ describe('startPreviewSession', () => {
           port: 0
         }
       },
-      adapters: { tunnel: createFakeTunnel() },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick',
       verifyTimeoutMs: 10_000
     })
@@ -257,7 +265,9 @@ describe('startPreviewSession', () => {
           port: 0
         }
       },
-      adapters: { tunnel: createFakeTunnel() },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick',
       verifyTimeoutMs: 10_000
     })
@@ -288,7 +298,9 @@ describe('startPreviewSession', () => {
           port: 0
         }
       },
-      adapters: { tunnel: createFakeTunnel() },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick',
       verifyTimeoutMs: 10_000
     })).rejects.toMatchObject({
@@ -375,8 +387,13 @@ describe('startPreviewSession', () => {
 
     const session = await startPreviewSession({
       cwd,
-      config: { server: { command: 'node server.mjs', port: 0 } },
-      adapters: { tunnel: createFakeTunnelWithDns(sequence), dns },
+      config: {
+        server: { command: 'node server.mjs', port: 0 }
+      },
+      adapters: {
+        tunnel: createFakeTunnelWithDns(sequence),
+        dns
+      },
       mode: 'named',
       hostname: 'retry.example.com',
       zone: 'example.com',
@@ -405,8 +422,13 @@ describe('startPreviewSession', () => {
 
     const session = await startPreviewSession({
       cwd,
-      config: { server: { command: 'node server.mjs', port: 0 } },
-      adapters: { tunnel: createFakeTunnelWithDns(sequence), dns: createFakeDns(sequence) },
+      config: {
+        server: { command: 'node server.mjs', port: 0 }
+      },
+      adapters: {
+        tunnel: createFakeTunnelWithDns(sequence),
+        dns: createFakeDns(sequence)
+      },
       mode: 'named',
       hostname: 'keep.example.com',
       zone: 'example.com',
@@ -441,8 +463,12 @@ describe('startPreviewSession', () => {
 
     const session = await startPreviewSession({
       cwd,
-      config: { server: { command: 'node server.mjs', port: 0 } },
-      adapters: { tunnel: createFakeTunnel() },
+      config: {
+        server: { command: 'node server.mjs', port: 0 }
+      },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick',
       autoStopAfterMs: 60_000,
       verifyTimeoutMs: 10_000
@@ -476,8 +502,12 @@ describe('startPreviewSession', () => {
 
     const session = await startPreviewSession({
       cwd,
-      config: { server: { command: 'node server.mjs', port: 0 } },
-      adapters: { tunnel: createFakeTunnel() },
+      config: {
+        server: { command: 'node server.mjs', port: 0 }
+      },
+      adapters: {
+        tunnel: createFakeTunnel()
+      },
       mode: 'quick',
       autoStopAfterMs: 1_200,
       verifyTimeoutMs: 10_000
@@ -506,8 +536,13 @@ describe('startPreviewSession', () => {
 
     const session = await startPreviewSession({
       cwd,
-      config: { server: { command: 'node server.mjs', port: 0 } },
-      adapters: { tunnel: createFakeTunnelWithDns(sequence), dns },
+      config: {
+        server: { command: 'node server.mjs', port: 0 }
+      },
+      adapters: {
+        tunnel: createFakeTunnelWithDns(sequence),
+        dns
+      },
       mode: 'named',
       hostname: 'timeout.example.com',
       zone: 'example.com',

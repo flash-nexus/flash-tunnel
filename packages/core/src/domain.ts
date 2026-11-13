@@ -51,7 +51,9 @@ export function renderSubdomain(options: RenderSubdomainOptions): string {
   const template = options.template ?? '{project}-{rand}'
   const project = slugify(basename(options.cwd))
   // Only pay for the git lookup when the template actually uses the branch.
-  const branch = template.includes('{branch}') ? slugify(gitBranch(options.cwd)) : ''
+  const branch = template.includes('{branch}')
+    ? slugify(gitBranch(options.cwd))
+    : ''
 
   const label = template
     .replaceAll('{project}', project)

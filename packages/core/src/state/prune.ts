@@ -68,7 +68,9 @@ async function pruneProjectDirectory(
   report: PruneProjectStateReport
 ): Promise<void> {
   const state = await readProjectState(directory)
-  const alive = state ? isProcessAlive(state.pid) : false
+  const alive = state
+    ? isProcessAlive(state.pid)
+    : false
 
   // A dead process never writes this state again, so drop the stale pointer.
   // A live process keeps it even if its heartbeat is old (hung or just waking).
@@ -135,7 +137,12 @@ async function pruneProjectDirectory(
 export async function pruneProjectState(
   options: { now?: number, retentionMs?: number } = {}
 ): Promise<PruneProjectStateReport> {
-  const report: PruneProjectStateReport = { projects: 0, logs: [], stateFiles: [], reapLogs: [] }
+  const report: PruneProjectStateReport = {
+    projects: 0,
+    logs: [],
+    stateFiles: [],
+    reapLogs: []
+  }
   const retention = options.retentionMs ?? retentionMilliseconds()
   if (!Number.isFinite(retention)) {
     return report

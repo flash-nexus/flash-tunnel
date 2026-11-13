@@ -117,7 +117,9 @@ async function checkCloudflare(
     checks.push({
       id: 'token',
       level: 'error',
-      message: error instanceof Error ? error.message : String(error),
+      message: error instanceof Error
+        ? error.message
+        : String(error),
       hint: 'Create a token with Account Cloudflare Tunnel Edit and Zone DNS Edit'
     })
     return checks
@@ -149,7 +151,9 @@ async function checkCloudflare(
     checks.push({
       id: 'account',
       level: 'error',
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error
+        ? error.message
+        : String(error)
     })
   }
 
@@ -191,8 +195,12 @@ async function checkCloudflare(
     checks.push({
       id: 'zone',
       level: 'error',
-      message: error instanceof Error ? error.message : String(error),
-      hint: error instanceof AdapterError ? error.hint : undefined
+      message: error instanceof Error
+        ? error.message
+        : String(error),
+      hint: error instanceof AdapterError
+        ? error.hint
+        : undefined
     })
   }
 
@@ -213,7 +221,9 @@ export async function collectDoctorChecks(options: DoctorOptions = {}): Promise<
       })
 
   let config: Awaited<ReturnType<typeof loadFlashTunnelConfig>>['config'] = {}
-  const configFile = options.config ? resolve(cwd, options.config) : findConfigFile(cwd)
+  const configFile = options.config
+    ? resolve(cwd, options.config)
+    : findConfigFile(cwd)
   if (!configFile) {
     checks.push({
       id: 'config',
@@ -231,7 +241,9 @@ export async function collectDoctorChecks(options: DoctorOptions = {}): Promise<
       checks.push({
         id: 'config',
         level: 'error',
-        message: error instanceof Error ? error.message : String(error),
+        message: error instanceof Error
+          ? error.message
+          : String(error),
         hint: 'Fix the flash-tunnel.ts export or syntax'
       })
     }
@@ -274,7 +286,9 @@ export async function collectDoctorChecks(options: DoctorOptions = {}): Promise<
     checks.push({
       id: 'server',
       level: 'error',
-      message: error instanceof Error ? error.message : String(error),
+      message: error instanceof Error
+        ? error.message
+        : String(error),
       hint: 'Try --command, --url or --cwd to point the tool at your dev server'
     })
   }
@@ -286,12 +300,16 @@ export async function collectDoctorChecks(options: DoctorOptions = {}): Promise<
     checks.push({
       id: 'sessions',
       level: 'warn',
-      message: `${stale.length} leftover session${stale.length === 1 ? '' : 's'} need cleanup`,
+      message: `${stale.length} leftover session${stale.length === 1
+        ? ''
+        : 's'} need cleanup`,
       hint: 'Run flash-tunnel clean --stale'
     })
   }
   else if (alive.length > 0) {
-    checks.push({ id: 'sessions', level: 'info', message: `${alive.length} running session${alive.length === 1 ? '' : 's'}` })
+    checks.push({ id: 'sessions', level: 'info', message: `${alive.length} running session${alive.length === 1
+      ? ''
+      : 's'}` })
   }
   else {
     checks.push({ id: 'sessions', level: 'ok', message: 'No leftover sessions' })

@@ -31,7 +31,12 @@ function createState(overrides: Partial<SessionState> = {}): SessionState {
     heartbeatAt: now,
     state: 'running',
     server: { cwd: project, startedByUs: true },
-    cleanup: { required: false, attempts: 0, inProgress: false, kept: false },
+    cleanup: {
+      required: false,
+      attempts: 0,
+      inProgress: false,
+      kept: false
+    },
     ...overrides
   }
 }

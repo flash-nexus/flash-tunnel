@@ -25,7 +25,9 @@ export function runBuildScript(cwd: string, reporter: Reporter): void {
   }
   catch (error) {
     throw new FlashTunnelError(
-      `Cannot read ${packageJson}: ${error instanceof Error ? error.message : String(error)}`,
+      `Cannot read ${packageJson}: ${error instanceof Error
+        ? error.message
+        : String(error)}`,
       { code: 'BUILD_FAILED', exitCode: 3, cause: error }
     )
   }
@@ -59,7 +61,12 @@ export function runBuildScript(cwd: string, reporter: Reporter): void {
   if (result.error || result.status !== 0) {
     throw new FlashTunnelError(
       `Build failed (exit code ${result.status ?? 'unknown'})`,
-      { code: 'BUILD_FAILED', exitCode: 3, hint: 'Fix the build errors and retry', cause: result.error }
+      {
+        code: 'BUILD_FAILED',
+        exitCode: 3,
+        hint: 'Fix the build errors and retry',
+        cause: result.error
+      }
     )
   }
 }

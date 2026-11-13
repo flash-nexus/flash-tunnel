@@ -189,7 +189,10 @@ export async function writeSessionState(state: SessionState): Promise<void> {
 }
 
 export async function readSessionState(projectRoot: string): Promise<SessionState | undefined> {
-  for (const file of [sessionFile(projectRoot), legacySessionFile(projectRoot)]) {
+  for (const file of [
+    sessionFile(projectRoot),
+    legacySessionFile(projectRoot)
+  ]) {
     try {
       return JSON.parse(await readFile(file, 'utf8')) as SessionState
     }
@@ -251,7 +254,10 @@ export async function acquireProjectLock(projectRoot: string, sessionId: string)
 
   // The legacy project-local lock may still belong to a session started by an
   // older flash-tunnel; respect it while that process is alive.
-  for (const path of [lockFile(projectRoot), legacyLockFile(projectRoot)]) {
+  for (const path of [
+    lockFile(projectRoot),
+    legacyLockFile(projectRoot)
+  ]) {
     try {
       const existing = JSON.parse(await readFile(path, 'utf8')) as { sessionId?: string, pid?: number }
       if (existing.pid && existing.sessionId && existing.sessionId !== sessionId && isProcessAlive(existing.pid)) {

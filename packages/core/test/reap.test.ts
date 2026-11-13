@@ -62,7 +62,12 @@ function createState(overrides: Partial<SessionState> = {}): SessionState {
       mode: 'named',
       accountId: 'acc-1'
     },
-    cleanup: { required: false, attempts: 0, inProgress: false, kept: false },
+    cleanup: {
+      required: false,
+      attempts: 0,
+      inProgress: false,
+      kept: false
+    },
     ...overrides
   }
 }
@@ -107,13 +112,17 @@ describe('cleanSession', () => {
     const serverPid = await waitForPid(server)
 
     const state = createState({
-      processes: [{ kind: 'cloudflared', pid: cloudflaredPid }],
+      processes: [
+        { kind: 'cloudflared', pid: cloudflaredPid }
+      ],
       server: { cwd: project, startedByUs: true, pid: serverPid }
     })
     await writeSessionState(state)
 
     const log: string[] = []
-    const result = await cleanSession(state, { cleaner: createCleaner(log) })
+    const result = await cleanSession(state, {
+      cleaner: createCleaner(log)
+    })
 
     expect(result.status).toBe('removed')
     expect(log).toEqual(['dns', 'tunnel'])
@@ -132,7 +141,9 @@ describe('cleanSession', () => {
     const child = spawnLongRunning()
     const pid = await waitForPid(child)
     await writeSessionState(createState({
-      processes: [{ kind: 'cloudflared', pid }]
+      processes: [
+        { kind: 'cloudflared', pid }
+      ]
     }))
 
     const result = await cleanSessions({ sessionId: 'ft_reap_1', dryRun: true })
@@ -168,10 +179,18 @@ describe('cleanSession', () => {
     const skipped = await cleanSessions({ sessionId: 'ft_reap_1' })
     expect(skipped[0]?.status).toBe('skipped')
 
-    const forced = await cleanSessions({ sessionId: 'ft_reap_1', force: true, cleaner: createCleaner() })
+    const forced = await cleanSessions({
+      sessionId: 'ft_reap_1',
+      force: true,
+      cleaner: createCleaner()
+    })
     expect(forced[0]?.status).toBe('removed')
 
-    const again = await cleanSessions({ sessionId: 'ft_reap_1', force: true, cleaner: createCleaner() })
+    const again = await cleanSessions({
+      sessionId: 'ft_reap_1',
+      force: true,
+      cleaner: createCleaner()
+    })
     expect(again).toHaveLength(0)
   })
 })
@@ -180,24 +199,33 @@ describe('reapSession', () => {
   it('reaps a dead session by id', async () => {
     await writeSessionState(createState())
 
-    const result = await reapSession('ft_reap_1', { cleaner: createCleaner() })
+    const result = await reapSession('ft_reap_1', {
+      cleaner: createCleaner()
+    })
 
     expect(result.status).toBe('removed')
     expect(await listSessionStates()).toHaveLength(0)
   })
 
   it('reports missing sessions without throwing', async () => {
-    const result = await reapSession('ft_missing', { cleaner: createCleaner() })
+    const result = await reapSession('ft_missing', {
+      cleaner: createCleaner()
+    })
     expect(result.status).toBe('not-found')
   })
 
   it('skips a live session unless forced', async () => {
     await writeSessionState(createState({ pid: process.pid }))
 
-    const skipped = await reapSession('ft_reap_1', { cleaner: createCleaner() })
+    const skipped = await reapSession('ft_reap_1', {
+      cleaner: createCleaner()
+    })
     expect(skipped.status).toBe('skipped')
 
-    const forced = await reapSession('ft_reap_1', { cleaner: createCleaner(), force: true })
+    const forced = await reapSession('ft_reap_1', {
+      cleaner: createCleaner(),
+      force: true
+    })
     expect(forced.status).toBe('removed')
   })
 })

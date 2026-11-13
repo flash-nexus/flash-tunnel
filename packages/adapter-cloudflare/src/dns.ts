@@ -74,7 +74,9 @@ export function createCloudflareDns(options: CloudflareDnsOptions): DnsAdapter {
         throw new AdapterError(`DNS record "${target.name}" already exists`, {
           code: 'RECORD_CONFLICT',
           hint: 'Use a different subdomain, or pass --overwrite to replace a non-flash-tunnel record',
-          details: { records: conflicts.map(record => record.id) }
+          details: {
+            records: conflicts.map(record => record.id)
+          }
         })
       }
     },

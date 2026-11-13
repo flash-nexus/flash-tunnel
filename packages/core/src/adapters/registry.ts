@@ -21,11 +21,15 @@ export class AdapterRegistry {
   }
 
   listTunnels(): string[] {
-    return [...this.tunnels.keys()]
+    return [
+      ...this.tunnels.keys()
+    ]
   }
 
   listDns(): string[] {
-    return [...this.dns.keys()]
+    return [
+      ...this.dns.keys()
+    ]
   }
 
   async resolveTunnel(id: string, cwd: string): Promise<TunnelAdapter> {

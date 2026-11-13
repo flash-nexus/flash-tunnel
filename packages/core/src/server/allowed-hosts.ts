@@ -20,7 +20,9 @@ export const QUICK_TUNNEL_ALLOWED_HOST = '.trycloudflare.com'
  * domain is allowed (Vite treats a leading dot as a wildcard).
  */
 export function tunnelAllowedHost(mode: TunnelMode, hostname?: string): string {
-  return mode === 'named' && hostname ? hostname : QUICK_TUNNEL_ALLOWED_HOST
+  return mode === 'named' && hostname
+    ? hostname
+    : QUICK_TUNNEL_ALLOWED_HOST
 }
 
 /**

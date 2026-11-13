@@ -35,7 +35,9 @@ async function waitForGone(pid: number, timeoutMs: number): Promise<boolean> {
 
 function kill(pid: number, signal: NodeJS.Signals, group: boolean): void {
   try {
-    process.kill(group ? -pid : pid, signal)
+    process.kill(group
+      ? -pid
+      : pid, signal)
   }
   catch {
     // The process or group is already gone, or the group is not available.
@@ -56,7 +58,12 @@ export async function killProcessTree(pid: number, options: KillProcessTreeOptio
 
   if (process.platform === 'win32') {
     await new Promise<void>((resolve) => {
-      const child = spawn('taskkill', ['/PID', String(pid), '/T', '/F'], {
+      const child = spawn('taskkill', [
+        '/PID',
+        String(pid),
+        '/T',
+        '/F'
+      ], {
         stdio: 'ignore',
         windowsHide: true
       })

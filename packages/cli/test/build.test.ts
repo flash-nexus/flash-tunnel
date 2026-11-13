@@ -46,7 +46,9 @@ describe('build helpers', () => {
     await writeFile(join(directory, '.git'), '')
     const app = join(directory, 'apps/web')
     await mkdir(app, { recursive: true })
-    await writeFile(join(app, 'package.json'), JSON.stringify({ scripts: { build: 'node build.mjs' } }))
+    await writeFile(join(app, 'package.json'), JSON.stringify({
+      scripts: { build: 'node build.mjs' }
+    }))
     await writeFile(join(app, 'build.mjs'), 'import { writeFileSync } from "node:fs"; writeFileSync("built.txt", process.env.npm_config_user_agent)\n')
 
     runBuildScript(app, new Reporter({ silent: true }))
@@ -67,7 +69,9 @@ describe('build helpers', () => {
     const server = createServer()
     await new Promise<void>(resolve => server.listen(0, '127.0.0.1', () => resolve()))
     const address = server.address()
-    const port = typeof address === 'object' && address ? address.port : 0
+    const port = typeof address === 'object' && address
+      ? address.port
+      : 0
 
     expect(await isPortAvailable(port)).toBe(false)
     await new Promise<void>(resolve => server.close(() => resolve()))

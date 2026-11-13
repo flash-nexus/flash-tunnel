@@ -102,13 +102,15 @@ describe('cloudflareDns', () => {
     const adapter = createCloudflareDns({
       apiToken: 'token',
       fetcher: createApiFetcher({
-        records: [{
-          id: 'other',
-          name: 'demo.example.com',
-          type: 'CNAME',
-          content: 'other.example.com',
-          proxied: false
-        }]
+        records: [
+          {
+            id: 'other',
+            name: 'demo.example.com',
+            type: 'CNAME',
+            content: 'other.example.com',
+            proxied: false
+          }
+        ]
       })
     })
     const ctx = createContext('D:/Projects/app')
@@ -126,13 +128,15 @@ describe('cloudflareDns', () => {
       apiToken: 'token',
       fetcher: createApiFetcher({
         calls,
-        records: [{
-          id: 'other',
-          name: 'demo.example.com',
-          type: 'CNAME',
-          content: 'other.example.com',
-          proxied: false
-        }]
+        records: [
+          {
+            id: 'other',
+            name: 'demo.example.com',
+            type: 'CNAME',
+            content: 'other.example.com',
+            proxied: false
+          }
+        ]
       })
     })
     const ctx = createContext('D:/Projects/app')
@@ -164,14 +168,16 @@ describe('cloudflareDns', () => {
       apiToken: 'token',
       fetcher: createApiFetcher({
         calls,
-        records: [{
-          id: 'old',
-          name: 'demo.example.com',
-          type: 'CNAME',
-          content: 'old.cfargotunnel.com',
-          proxied: true,
-          comment: 'flash-tunnel:ft_old'
-        }]
+        records: [
+          {
+            id: 'old',
+            name: 'demo.example.com',
+            type: 'CNAME',
+            content: 'old.cfargotunnel.com',
+            proxied: true,
+            comment: 'flash-tunnel:ft_old'
+          }
+        ]
       })
     })
     const ctx = createContext('D:/Projects/app')

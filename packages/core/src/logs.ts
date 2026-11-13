@@ -81,7 +81,9 @@ export async function pruneSessionLogs(projectRoot: string, keep = 10): Promise<
     sessions.set(match[1], entries)
   }
 
-  const ordered = [...sessions.entries()]
+  const ordered = [
+    ...sessions.entries()
+  ]
     .map(([sessionId, entries]) => ({
       sessionId,
       latest: Math.max(...entries.map(entry => entry.mtimeMs))

@@ -13,12 +13,16 @@ vi.mock('@inquirer/prompts', () => ({
 
 describe('prompt cancellation', () => {
   it('maps ExitPromptError to exit code 130', async () => {
-    await expect(chooseZone([{ id: 'z', name: 'example.com', status: 'active' }]))
+    await expect(chooseZone([
+      { id: 'z', name: 'example.com', status: 'active' }
+    ]))
       .rejects
       .toBeInstanceOf(FlashTunnelError)
 
     try {
-      await chooseZone([{ id: 'z', name: 'example.com', status: 'active' }])
+      await chooseZone([
+        { id: 'z', name: 'example.com', status: 'active' }
+      ])
     }
     catch (error) {
       expect((error as FlashTunnelError).exitCode).toBe(130)

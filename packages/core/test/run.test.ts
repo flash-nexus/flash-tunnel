@@ -11,7 +11,11 @@ const handles: Array<{ stop: () => Promise<void> }> = []
 async function occupyPort(): Promise<number> {
   const server = createServer((_request, response) => response.end('unrelated-server'))
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
-  handles.push({ stop: () => new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())) })
+  handles.push({
+    stop: () => new Promise<void>((resolve, reject) => server.close(error => error
+      ? reject(error)
+      : resolve()))
+  })
   const address = server.address()
   if (!address || typeof address === 'string') {
     throw new Error('Expected a TCP address')
@@ -68,7 +72,9 @@ describe('startServer', () => {
   it.each([false, true])('does not adopt an occupied guessed port even if it is printed: %s', async (printUrl) => {
     const port = await occupyPort()
     const cwd = await createDirectory({
-      'server.mjs': `${printUrl ? `console.log('Local: http://localhost:${port}')` : ''}\nsetInterval(() => {}, 1000)`
+      'server.mjs': `${printUrl
+        ? `console.log('Local: http://localhost:${port}')`
+        : ''}\nsetInterval(() => {}, 1000)`
     })
     await expect(startServer({
       mode: 'command',

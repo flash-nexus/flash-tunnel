@@ -51,7 +51,17 @@ function events(): Array<{ type: string, code?: number | string }> {
 }
 
 async function runPlanning(args: string[] = []): Promise<void> {
-  await runCli(['node', 'flash-tunnel', '--cwd', directory, '--mode', 'quick', '--no-sweep', '--json', ...args])
+  await runCli([
+    'node',
+    'flash-tunnel',
+    '--cwd',
+    directory,
+    '--mode',
+    'quick',
+    '--no-sweep',
+    '--json',
+    ...args
+  ])
   await vi.waitFor(() => expect(events().some(event => event.type === 'exit')).toBe(true))
 }
 
@@ -68,13 +78,20 @@ async function occupiedPort(): Promise<number> {
 
 describe('preview planning', () => {
   it('passes the original detected plan to the session', async () => {
-    await writeFile(join(directory, 'package.json'), JSON.stringify({ scripts: { dev: 'node app.mjs' } }))
+    await writeFile(join(directory, 'package.json'), JSON.stringify({
+      scripts: { dev: 'node app.mjs' }
+    }))
 
     await runPlanning(['--port', '0'])
 
     expect(detectServer).toHaveBeenCalledTimes(1)
     expect(startPreviewSession).toHaveBeenCalledWith(expect.objectContaining({
-      serverPlan: expect.objectContaining({ script: 'dev', reason: 'dev script', confidence: 'low', port: 0 })
+      serverPlan: expect.objectContaining({
+        script: 'dev',
+        reason: 'dev script',
+        confidence: 'low',
+        port: 0
+      })
     }))
   })
 
@@ -101,9 +118,14 @@ describe('preview planning', () => {
 
   it('requires consent before reusing an occupied fixed port', async () => {
     const port = await occupiedPort()
-    await writeFile(join(directory, 'package.json'), JSON.stringify({ scripts: { dev: 'node app.mjs' } }))
+    await writeFile(join(directory, 'package.json'), JSON.stringify({
+      scripts: { dev: 'node app.mjs' }
+    }))
 
-    await runPlanning(['--port', String(port)])
+    await runPlanning([
+      '--port',
+      String(port)
+    ])
 
     expect(startPreviewSession).not.toHaveBeenCalled()
     expect(events()).toContainEqual(expect.objectContaining({ type: 'error', code: 'PORT_IN_USE' }))
@@ -132,7 +154,9 @@ describe('preview planning', () => {
 
   it('uses the error code to offer workspaces even when the message changes', async () => {
     await mkdir(join(directory, 'apps/web'), { recursive: true })
-    await writeFile(join(directory, 'apps/web/package.json'), JSON.stringify({ scripts: { dev: 'vite' } }))
+    await writeFile(join(directory, 'apps/web/package.json'), JSON.stringify({
+      scripts: { dev: 'vite' }
+    }))
     vi.mocked(detectServer).mockImplementationOnce(() => {
       throw new FlashTunnelError('No application entry point is available', { code: 'NO_RUNNABLE_SCRIPT', exitCode: 3 })
     })

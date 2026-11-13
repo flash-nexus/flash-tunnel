@@ -60,7 +60,9 @@ export async function loadFlashTunnelConfig(
   cwd: string,
   options: LoadFlashTunnelConfigOptions = {}
 ): Promise<LoadedFlashTunnelConfig> {
-  const configPath = options.config ? resolve(cwd, options.config) : findConfigFile(cwd)
+  const configPath = options.config
+    ? resolve(cwd, options.config)
+    : findConfigFile(cwd)
   if (!configPath) {
     return { config: {} }
   }
@@ -72,11 +74,13 @@ export async function loadFlashTunnelConfig(
   const loaded = await loadConfig<FlashTunnelConfig>({
     cwd: file.dir,
     merge: false,
-    sources: [{
-      files: file.name,
-      extensions: [file.ext.replace(/^\./, '') || 'ts'],
-      transform: createConfigTransform()
-    }]
+    sources: [
+      {
+        files: file.name,
+        extensions: [file.ext.replace(/^\./, '') || 'ts'],
+        transform: createConfigTransform()
+      }
+    ]
   })
 
   const config = loaded.config

@@ -43,12 +43,17 @@ describe('verifyPublicUrl', () => {
       const url = String(input)
       if (url.includes('cloudflare-dns.com')) {
         return new Response(JSON.stringify({
-          Answer: [{
-            name: 'demo.example.com',
-            type: 5,
-            data: 'tunnel.cfargotunnel.com'
-          }]
-        }), { status: 200, headers: { 'content-type': 'application/dns-json' } })
+          Answer: [
+            {
+              name: 'demo.example.com',
+              type: 5,
+              data: 'tunnel.cfargotunnel.com'
+            }
+          ]
+        }), {
+          status: 200,
+          headers: { 'content-type': 'application/dns-json' }
+        })
       }
       return new Response('bad', { status: 503 })
     }))
