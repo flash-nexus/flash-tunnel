@@ -11,7 +11,8 @@
       "@flash-tunnel/config": ["./packages/config/src/index.ts"],
       "@flash-tunnel/core": ["./packages/core/src/index.ts"],
       "@flash-tunnel/types": ["./packages/types/src/index.ts"],
-      "@flash-tunnel/utils": ["./packages/utils/src/index.ts"]
+      "@flash-tunnel/utils": ["./packages/utils/src/index.ts"],
+      "@flash-tunnel/sdk": ["./packages/sdk/src/index.ts"]
     },
     "resolveJsonModule": true,
     "types": ["node"],

@@ -95,6 +95,22 @@ flash-tunnel doctor
 | `flash-tunnel init` | Create `flash-tunnel.ts` (runtime state stays outside the project) |
 | `flash-tunnel providers` | List built-in adapters and their capabilities |
 
+## Programmatic integration
+
+Use `@flash-tunnel/sdk` when another Node/TypeScript tool needs to embed a tunnel. The SDK accepts an already-running local origin, returns the public URL, and exposes asynchronous stop/cleanup methods.
+
+```ts
+import { startTunnel } from '@flash-tunnel/sdk'
+
+const session = await startTunnel({
+  localUrl: 'http://127.0.0.1:4317',
+  mode: 'quick'
+})
+
+console.log(session.publicUrl)
+await session.stop()
+```
+
 ## Configuration
 
 The config file is optional. Put it in the project root, or any parent directory up to the git root:

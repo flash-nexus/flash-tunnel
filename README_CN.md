@@ -95,6 +95,22 @@ flash-tunnel doctor
 | `flash-tunnel init` | 生成 `flash-tunnel.ts`（运行时状态不会写进项目目录） |
 | `flash-tunnel providers` | 列出内置适配器与能力矩阵 |
 
+## 程序化集成
+
+需要在其他 Node/TypeScript 工具中嵌入 Tunnel 时，使用 `@flash-tunnel/sdk`，不要在宿主进程里再次调用 `npx flash-tunnel`。SDK 接收已经运行的本地 origin，返回公网 URL，并提供异步停止和清理方法。
+
+```ts
+import { startTunnel } from '@flash-tunnel/sdk'
+
+const session = await startTunnel({
+  localUrl: 'http://127.0.0.1:4317',
+  mode: 'quick'
+})
+
+console.log(session.publicUrl)
+await session.stop()
+```
+
 ## 配置
 
 配置文件是可选的。放在项目根目录（或任意上级目录到 git 根）即可：
