@@ -363,6 +363,51 @@ describe('startPreviewSession', () => {
     expect(sequence.indexOf('tunnel:deprovision')).toBeGreaterThan(sequence.indexOf('dns:remove'))
   })
 
+  it('can leave dns lifecycle management to the caller', async () => {
+    const cwd = await createDirectory({
+      'server.mjs': `
+        import { createServer } from 'node:http'
+        const server = createServer((request, response) => response.end('external-dns-ok'))
+        server.listen(0, '127.0.0.1', () => {
+          console.log('Local: http://127.0.0.1:' + server.address().port)
+        })
+      `
+    })
+    const sequence: string[] = []
+
+    const session = await startPreviewSession({
+      cwd,
+      config: {
+        server: { command: 'node server.mjs', port: 0 }
+      },
+      adapters: {
+        tunnel: createFakeTunnelWithDns(sequence)
+      },
+      manageDns: false,
+      mode: 'named',
+      hostname: 'external.example.com',
+      verifyTimeoutMs: 10_000
+    })
+    sessions.push(session)
+
+    expect(session.dns).toBeUndefined()
+    expect(sequence).toEqual([
+      'tunnel:preflight',
+      'tunnel:provision',
+      'tunnel:start'
+    ])
+
+    await session.stop()
+
+    expect(sequence).toEqual([
+      'tunnel:preflight',
+      'tunnel:provision',
+      'tunnel:start',
+      'tunnel:stop',
+      'tunnel:deprovision'
+    ])
+  })
+
   it('retries a retriable dns removal before giving up', async () => {
     const cwd = await createDirectory({
       'server.mjs': `

@@ -1,6 +1,6 @@
 import type { FlashTunnelConfig } from '@flash-tunnel/config'
 import type { Emitter, PreviewSession } from '@flash-tunnel/core'
-import type { FlashTunnelEvents, TunnelMode } from '@flash-tunnel/types'
+import type { DnsAdapter, FlashTunnelEvents, TunnelMode } from '@flash-tunnel/types'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process, { loadEnvFile } from 'node:process'
@@ -15,6 +15,16 @@ export interface EmbeddedTunnelOptions {
   /** Environment file to load. Defaults to cwd/.env when present. */
   envFile?: string
   mode?: Extract<TunnelMode, 'quick' | 'named'>
+  /**
+   * Custom DNS adapter used for named tunnels. When omitted, the Cloudflare
+   * adapter is created for backwards-compatible standalone usage.
+   */
+  dnsAdapter?: DnsAdapter
+  /**
+   * Disable DNS provisioning and cleanup. The caller must provision the
+   * hostname before the tunnel is verified.
+   */
+  manageDns?: boolean
   /** Required for named tunnels. */
   hostname?: string
   /** Required for named tunnels. */
@@ -112,22 +122,25 @@ export async function startTunnel(options: EmbeddedTunnelOptions): Promise<Embed
     apiBase,
     originRequest: resolvedOptions.originRequest
   })
-  const dns = mode === 'named'
-    ? createCloudflareDns({
-        apiToken: apiToken ?? '',
-        zoneId,
-        apiBase
-      })
+  const dns = mode === 'named' && options.manageDns !== false
+    ? options.dnsAdapter ?? createCloudflareDns({
+      apiToken: apiToken ?? '',
+      zoneId,
+      apiBase
+    })
     : undefined
 
-  if (mode === 'named' && (!options.hostname || !options.zone)) {
-    throw new Error('Named tunnels require both hostname and zone')
+  if (mode === 'named' && (!options.hostname || (options.manageDns !== false && !options.zone))) {
+    throw new Error(options.manageDns === false
+      ? 'Named tunnels without DNS management require a hostname'
+      : 'Named tunnels require both hostname and zone')
   }
 
   const session = await startPreviewSession({
     cwd: options.cwd ?? process.cwd(),
     config: toConfig(resolvedOptions, mode),
     adapters: { tunnel, dns },
+    manageDns: options.manageDns,
     mode,
     hostname: options.hostname,
     zone: options.zone,

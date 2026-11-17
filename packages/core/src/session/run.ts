@@ -73,6 +73,11 @@ export interface StartPreviewSessionOptions {
   /** Execute a caller-resolved plan without repeating server detection. */
   serverPlan?: ServerPlan
   adapters: PreviewAdapters
+  /**
+   * Whether the session should create and remove the DNS record described by
+   * the tunnel handle. Defaults to true for standalone CLI compatibility.
+   */
+  manageDns?: boolean
   mode?: TunnelMode
   hostname?: string
   zone?: string
@@ -580,7 +585,7 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
 
     events.emit('tunnel:provisioned', { tunnelId: handle.tunnelId, name: handle.name })
 
-    if (handle.dns) {
+    if (handle.dns && options.manageDns !== false) {
       if (!adapters.dns) {
         throw new Error('The tunnel requires a DNS record but no DNS adapter is configured')
       }
