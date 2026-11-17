@@ -1,7 +1,9 @@
 import type { FlashTunnelConfig } from '@flash-tunnel/config'
 import type { Emitter, PreviewSession } from '@flash-tunnel/core'
 import type { FlashTunnelEvents, TunnelMode } from '@flash-tunnel/types'
-import process from 'node:process'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+import process, { loadEnvFile } from 'node:process'
 import { createCloudflareDns, createCloudflareTunnel } from '@flash-tunnel/adapter-cloudflare'
 import { startPreviewSession } from '@flash-tunnel/core'
 
@@ -10,6 +12,8 @@ export interface EmbeddedTunnelOptions {
   localUrl: string
   /** Working directory used for session state and diagnostics. */
   cwd?: string
+  /** Environment file to load. Defaults to cwd/.env when present. */
+  envFile?: string
   mode?: Extract<TunnelMode, 'quick' | 'named'>
   /** Required for named tunnels. */
   hostname?: string
@@ -88,20 +92,31 @@ function publicSession(session: PreviewSession): EmbeddedTunnelSession {
  * and any named-tunnel/DNS resources created for the session.
  */
 export async function startTunnel(options: EmbeddedTunnelOptions): Promise<EmbeddedTunnelSession> {
+  loadEnvironment(options.envFile, options.cwd)
   const mode = options.mode ?? 'quick'
   const apiToken = options.apiToken ?? process.env.CLOUDFLARE_API_TOKEN
-  const tunnel = createCloudflareTunnel({
-    cloudflaredPath: options.cloudflaredPath,
-    accountId: options.accountId,
+  const accountId = options.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
+  const zoneId = options.zoneId ?? process.env.CLOUDFLARE_ZONE_ID
+  const apiBase = options.apiBase ?? process.env.FLASH_TUNNEL_CLOUDFLARE_API_BASE
+  const resolvedOptions = {
+    ...options,
+    accountId,
+    zoneId,
     apiToken,
-    apiBase: options.apiBase,
-    originRequest: options.originRequest
+    apiBase
+  }
+  const tunnel = createCloudflareTunnel({
+    cloudflaredPath: resolvedOptions.cloudflaredPath,
+    accountId: resolvedOptions.accountId,
+    apiToken,
+    apiBase,
+    originRequest: resolvedOptions.originRequest
   })
   const dns = mode === 'named'
     ? createCloudflareDns({
         apiToken: apiToken ?? '',
-        zoneId: options.zoneId,
-        apiBase: options.apiBase
+        zoneId,
+        apiBase
       })
     : undefined
 
@@ -111,7 +126,7 @@ export async function startTunnel(options: EmbeddedTunnelOptions): Promise<Embed
 
   const session = await startPreviewSession({
     cwd: options.cwd ?? process.cwd(),
-    config: toConfig(options, mode),
+    config: toConfig(resolvedOptions, mode),
     adapters: { tunnel, dns },
     mode,
     hostname: options.hostname,
@@ -126,6 +141,18 @@ export async function startTunnel(options: EmbeddedTunnelOptions): Promise<Embed
   })
 
   return publicSession(session)
+}
+
+function loadEnvironment(envFile?: string, cwd?: string): void {
+  if (envFile) {
+    loadEnvFile(resolve(envFile))
+    return
+  }
+
+  const defaultEnvFile = resolve(cwd ?? process.cwd(), '.env')
+  if (existsSync(defaultEnvFile)) {
+    loadEnvFile(defaultEnvFile)
+  }
 }
 
 export type { Emitter, PreviewSession } from '@flash-tunnel/core'
