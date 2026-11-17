@@ -12,9 +12,9 @@ import type { AdapterContext, DnsAdapter, FlashTunnelEvents, TunnelAdapter } fro
 import type { Command } from 'cac'
 import type { ReporterOptions } from './ui/reporter'
 import { spawn, spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import process from 'node:process'
+import process, { loadEnvFile } from 'node:process'
 import { CloudflareApi, createCloudflareDns, createCloudflareTunnel } from '@flash-tunnel/adapter-cloudflare'
 import {
   AdapterRegistry,
@@ -66,6 +66,7 @@ import { installWarningFilter } from './warnings'
 interface StartOptions {
   cwd?: string
   config?: string
+  envFile?: string
   port?: string
   command?: string
   url?: string
@@ -1351,7 +1352,20 @@ async function runCommand(
 }
 
 function runStart(options: StartOptions = {}): Promise<void> {
+  loadEnvironment(options.envFile, options.cwd)
   return runCommand(options, reporter => startPreview(options, reporter))
+}
+
+function loadEnvironment(envFile?: string, cwd?: string): void {
+  if (envFile) {
+    loadEnvFile(envFile)
+    return
+  }
+
+  const defaultEnvFile = resolve(cwd ?? process.cwd(), '.env')
+  if (existsSync(defaultEnvFile)) {
+    loadEnvFile(defaultEnvFile)
+  }
 }
 
 function runCleanCommand(options: CleanOptions = {}): Promise<void> {
@@ -1375,6 +1389,7 @@ function withStartOptions(command: Command): Command {
   return command
     .option('--cwd <dir>', 'Project directory')
     .option('--config <path>', 'Path to flash-tunnel.ts')
+    .option('--env-file <path>', 'Load environment variables from a file, defaults to cwd/.env')
     .option('--port <port>', 'Preferred local port')
     .option('--command <command>', 'Command used to start the local server')
     .option('--url <url>', 'Reuse an already running server')
