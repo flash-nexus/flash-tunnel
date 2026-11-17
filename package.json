@@ -5,9 +5,13 @@
   "private": true,
   "packageManager": "pnpm@12.18.0",
   "license": "MIT",
+  "homepage": "https://github.com/flash-nexus/flash-tunnel#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/flash-nexus/flash-tunnel.git"
+  },
+  "bugs": {
+    "url": "https://github.com/flash-nexus/flash-tunnel/issues"
   },
   "engines": {
     "node": ">=22.14.0"

@@ -168,7 +168,7 @@
 - [x] 保留 `flash-tunnel@0.0.0` 现状（`latest` 不动，不加 deprecate），等 0.1.0 覆盖
 - [x] npm 上七个包均存在，`repository` 与 GitHub 仓库完全一致
 - [x] 本地 lint/typecheck/test/build 通过（tag 前的唯一门禁）
-- [x] 七个包分别配置 Trusted Publisher（GitHub Actions / `flash-tunnel/flash-tunnel` / `release.yaml` / 允许 `npm publish`）
+- [x] 七个包分别配置 Trusted Publisher（GitHub Actions / `flash-nexus/flash-tunnel` / `release.yaml` / 允许 `npm publish`）
 - [x] 记住 2 天验证窗口：配置后当天发 `0.1.0`
 - [x] `pnpm release` 将七个包从 `0.0.0` 升到 `0.1.0`，push `v0.1.0` tag
 - [x] `release.yaml` 通过 OIDC 发布成功，无 Token、有 provenance

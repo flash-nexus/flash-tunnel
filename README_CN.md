@@ -2,8 +2,22 @@
 
 **将本地服务通过 Cloudflare Tunnel 暴露出去。**
 
-`flash-tunnel` 只负责隧道 adapter 和 `cloudflared` 生命周期。DNS 记录、
-公网域名命名以及环境配置编排由 `flash-nexus` 负责。
+`flash-tunnel` 是 Flash Nexus 网络中的底层隧道包，只负责 Cloudflare
+隧道适配器和 `cloudflared` 生命周期。DNS 记录由 `flash-dns` 管理，公网
+域名命名和整体环境编排由 `flash-nexus` 负责。
+
+三个包的边界如下：
+
+```text
+flash-nexus       编排和一条命令的完整工作流
+├── flash-dns     DNS 记录、命名和归属管理
+└── flash-tunnel  隧道适配器和 cloudflared 生命周期
+```
+
+如果本地服务已经有公网域名，或者只需要临时的
+`trycloudflare.com` 地址，可以直接使用 `flash-tunnel`。如果需要在同一
+次会话中创建 DNS 记录、启动隧道并在结束时一起清理，则使用
+`flash-nexus`。
 
 ## 快速开始
 
@@ -13,7 +27,7 @@
 npx flash-tunnel --mode quick --url http://127.0.0.1:4317
 ```
 
-命名隧道需要先准备好 DNS 记录，再传入已经存在的域名：
+独立使用命名隧道时，先用 `flash-dns` 准备 DNS 记录，再传入已经存在的域名：
 
 ```bash
 npx flash-tunnel \
@@ -40,7 +54,8 @@ npx flash-tunnel \
 | `--dry-run` | 输出解析后的隧道配置 |
 | `--json` | 输出机器可读 JSON |
 
-`flash-tunnel` 不会创建、修改或删除 DNS 记录。
+`flash-tunnel` 不会创建、修改或删除 DNS 记录。`flash-dns` 可以独立管理
+这些记录，`flash-nexus` 则负责把两个包组合到同一个会话中。
 
 ## SDK
 
@@ -88,6 +103,8 @@ export default defineConfig({
 ```
 
 需要同时处理 DNS 命名和 provider 配置时，使用 `flash-nexus.config.ts`。
+完整的集成 CLI 和 SDK 见
+[flash-nexus 仓库](https://github.com/flash-nexus/flash-nexus)。
 
 ## 开发
 

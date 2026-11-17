@@ -61,7 +61,7 @@ flash-tunnel/
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flash-tunnel/flash-tunnel.git"
+    "url": "git+https://github.com/flash-nexus/flash-tunnel.git"
   },
   "scripts": {
     "stub": "pnpm -r run stub",
@@ -102,7 +102,7 @@ flash-tunnel/
 >
 > `packageManager` 用 `pnpm@12.12.1`：该版本的 `pnpm publish` 已支持 OIDC（含 `NPM_ID_TOKEN` 的 `aud` 校验），是可信发布链路的最小版本。
 >
-> `repository.url` 必须与 GitHub 仓库**完全一致**：npm 的 Trusted Publisher 会校验这个字段，不一致会在发布时报 `ENEEDAUTH`。仓库是 `flash-tunnel/flash-tunnel`（本地 remote 为 `git@github.com:flash-tunnel/flash-tunnel.git`），npm 元数据统一写 `git+https://github.com/flash-tunnel/flash-tunnel.git`。
+> `repository.url` 必须与 GitHub 仓库**完全一致**：npm 的 Trusted Publisher 会校验这个字段，不一致会在发布时报 `ENEEDAUTH`。仓库是 `flash-nexus/flash-tunnel`（本地 remote 为 `git@github.com:flash-nexus/flash-tunnel.git`），npm 元数据统一写 `git+https://github.com/flash-nexus/flash-tunnel.git`。
 >
 > 版本号以脚手架创建时 `pnpm add` 的解析结果为准；上表对齐参考仓库当前主版本（ESLint 10、antfu config 9、Vitest 5、unbuild 3、bumpp 12）。
 >
@@ -288,7 +288,7 @@ export default defineBuildConfig(mergeDefaultBuildConfig({
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flash-tunnel/flash-tunnel.git"
+    "url": "git+https://github.com/flash-nexus/flash-tunnel.git"
   },
   "dependencies": {
     "@flash-tunnel/cli": "workspace:*",
@@ -338,7 +338,7 @@ export default defineBuildConfig(mergeDefaultBuildConfig({
   "publishConfig": { "access": "public" },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flash-tunnel/flash-tunnel.git"
+    "url": "git+https://github.com/flash-nexus/flash-tunnel.git"
   },
   "dependencies": {
     "@flash-tunnel/adapter-cloudflare": "workspace:*",

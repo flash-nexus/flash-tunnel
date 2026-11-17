@@ -2,9 +2,23 @@
 
 **Run a local origin through Cloudflare Tunnel.**
 
-`flash-tunnel` owns the tunnel adapter and the `cloudflared` lifecycle. DNS
+`flash-tunnel` is the low-level tunnel package in the Flash Nexus network. It
+owns the Cloudflare tunnel adapter and the `cloudflared` lifecycle. DNS
 records, public hostname naming, and environment orchestration belong to
-`flash-nexus`.
+`flash-nexus`, while DNS record operations are implemented by `flash-dns`.
+
+The three packages have clear boundaries:
+
+```text
+flash-nexus       orchestration and one-command workflow
+├── flash-dns     DNS records, naming and ownership
+└── flash-tunnel  Tunnel adapters and cloudflared lifecycle
+```
+
+Use `flash-tunnel` when a local origin already has a public hostname or when
+you only need a temporary `trycloudflare.com` URL. Use `flash-nexus` when the
+same workflow must create the DNS record, start the Tunnel and clean both up
+together.
 
 > Early preview (`0.x`). APIs may change between minor versions.
 
@@ -16,7 +30,8 @@ For a temporary public URL:
 npx flash-tunnel --mode quick --url http://127.0.0.1:4317
 ```
 
-For a named tunnel, create the DNS record first and pass the existing hostname:
+For a standalone named tunnel, create the DNS record with `flash-dns` first,
+then pass the existing hostname:
 
 ```bash
 npx flash-tunnel \
@@ -43,7 +58,9 @@ infer it, `CLOUDFLARE_ACCOUNT_ID`.
 | `--dry-run` | Print resolved tunnel configuration |
 | `--json` | Print machine-readable output |
 
-`flash-tunnel` never creates, updates, or deletes DNS records.
+`flash-tunnel` never creates, updates, or deletes DNS records. `flash-dns` can
+manage those records independently, while `flash-nexus` composes both packages
+for a single session.
 
 ## SDK
 
@@ -91,7 +108,8 @@ export default defineConfig({
 ```
 
 Use `flash-nexus.config.ts` when DNS naming and provider configuration are
-part of the same workflow.
+part of the same workflow. The integrated CLI and SDK are published from the
+[flash-nexus repository](https://github.com/flash-nexus/flash-nexus).
 
 ## Development
 

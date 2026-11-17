@@ -25,6 +25,10 @@ const session = await startTunnel({
 })
 ```
 
+If the workflow also needs DNS naming and record cleanup, use
+[`flash-nexus`](https://github.com/flash-nexus/flash-nexus). It composes
+`flash-dns` for DNS records with this SDK for the Tunnel lifecycle.
+
 For named Cloudflare tunnels, the SDK loads `cwd/.env` when it exists. Pass
 `envFile` to use another file. `CLOUDFLARE_API_TOKEN`,
 and `CLOUDFLARE_ACCOUNT_ID` are resolved automatically by the Cloudflare
