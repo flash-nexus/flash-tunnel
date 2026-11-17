@@ -146,7 +146,7 @@ describe('startServer', () => {
       cwd,
       command: 'node server.mjs',
       framework: 'unknown',
-      port: 3000,
+      port: 0,
       reason: 'test',
       confidence: 'high'
     }, { timeoutMs: 10_000 })
@@ -178,7 +178,7 @@ describe('startServer', () => {
       cwd,
       command: 'node server.mjs',
       framework: 'unknown',
-      port: 3000,
+      port: 0,
       reason: 'test',
       confidence: 'high'
     }, { timeoutMs: 10_000 })
@@ -206,7 +206,7 @@ describe('startServer', () => {
       cwd,
       command: 'node env.mjs',
       framework: 'unknown',
-      port: 3000,
+      port: 0,
       reason: 'test',
       confidence: 'high'
     }, {
@@ -253,7 +253,7 @@ describe('startServer', () => {
       cwd,
       command: 'node exit.mjs',
       framework: 'unknown',
-      port: 3000,
+      port: 0,
       reason: 'test',
       confidence: 'high'
     }, { timeoutMs: 5000 })).rejects.toThrow(/exited before it became ready/)
