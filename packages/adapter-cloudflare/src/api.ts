@@ -1,7 +1,8 @@
+import process from 'node:process'
 import { AdapterError } from '@flash-tunnel/types'
 
 export interface CloudflareApiOptions {
-  apiToken: string
+  env?: Record<string, string | undefined>
   apiBase?: string
   fetcher?: typeof fetch
 }
@@ -54,11 +55,21 @@ export class CloudflareApi {
   private readonly apiToken: string
   private readonly apiBase: string
   private readonly fetcher: typeof fetch
+  private readonly accountId?: string
 
   constructor(options: CloudflareApiOptions) {
-    this.apiToken = options.apiToken
-    this.apiBase = options.apiBase ?? 'https://api.cloudflare.com/client/v4'
+    const env = options.env ?? process.env
+    const apiToken = env.CLOUDFLARE_API_TOKEN?.trim()
+    if (!apiToken) {
+      throw new AdapterError('Named tunnels require CLOUDFLARE_API_TOKEN', {
+        code: 'AUTH_INVALID',
+        hint: 'Set CLOUDFLARE_API_TOKEN, or use --mode quick for a temporary domain'
+      })
+    }
+    this.apiToken = apiToken
+    this.apiBase = options.apiBase ?? env.FLASH_TUNNEL_CLOUDFLARE_API_BASE ?? 'https://api.cloudflare.com/client/v4'
     this.fetcher = options.fetcher ?? fetch
+    this.accountId = env.CLOUDFLARE_ACCOUNT_ID?.trim() || undefined
   }
 
   async request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -119,9 +130,9 @@ export class CloudflareApi {
     return this.request<CloudflareAccount[]>('GET', '/accounts?per_page=50')
   }
 
-  async resolveAccountId(preferred?: string): Promise<string> {
-    if (preferred) {
-      return preferred
+  async resolveAccountId(): Promise<string> {
+    if (this.accountId) {
+      return this.accountId
     }
 
     const accounts = await this.listAccounts()
@@ -131,7 +142,7 @@ export class CloudflareApi {
 
     throw new AdapterError('Cannot determine the Cloudflare account id', {
       code: 'ACCOUNT_NOT_FOUND',
-      hint: 'Set CLOUDFLARE_ACCOUNT_ID or providers.cloudflare.accountId',
+      hint: 'Set CLOUDFLARE_ACCOUNT_ID when the token can access multiple accounts',
       details: {
         accounts: accounts.map(account => account.name)
       }

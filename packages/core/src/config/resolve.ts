@@ -30,7 +30,6 @@ export interface ResolvedConfigValues {
   }
   providers: {
     cloudflare: {
-      accountId?: string
       cloudflaredPath: string
       originRequest?: {
         httpHostHeader?: string
@@ -276,12 +275,6 @@ export function resolveConfig(input: ResolveConfigInput): ResolvedConfig {
       : config.tunnel?.name ? 'config' : 'default'
   }
 
-  const accountId = optionalString(env.CLOUDFLARE_ACCOUNT_ID) ?? optionalString(config.providers?.cloudflare?.accountId)
-  if (accountId) {
-    sources['providers.cloudflare.accountId'] = {
-      source: env.CLOUDFLARE_ACCOUNT_ID ? 'env' : 'config'
-    }
-  }
   const cloudflaredPath = optionalString(env.FLASH_TUNNEL_CLOUDFLARED) ?? config.providers?.cloudflare?.cloudflaredPath ?? 'cloudflared'
   const autoStopPick = firstOf<string | number>(
     [cli.autoStop, 'cli'],
@@ -317,7 +310,6 @@ export function resolveConfig(input: ResolveConfigInput): ResolvedConfig {
       tunnel: { provider, mode, name, hostname },
       providers: {
         cloudflare: {
-          accountId,
           cloudflaredPath,
           originRequest: config.providers?.cloudflare?.originRequest
         }

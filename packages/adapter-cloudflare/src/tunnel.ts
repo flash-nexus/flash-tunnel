@@ -45,9 +45,8 @@ function assertTunnelTarget(localUrl: string): void {
 }
 
 export interface CloudflareTunnelOptions {
+  env?: Record<string, string | undefined>
   cloudflaredPath?: string
-  accountId?: string
-  apiToken?: string
   apiBase?: string
   originRequest?: {
     httpHostHeader?: string
@@ -64,14 +63,8 @@ interface ActiveTunnel {
 }
 
 export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): TunnelAdapter {
-  const cloudflaredPath = options.cloudflaredPath ?? 'cloudflared'
-  const api = options.apiToken
-    ? new CloudflareApi({
-        apiToken: options.apiToken,
-        apiBase: options.apiBase,
-        fetcher: options.fetcher
-      })
-    : undefined
+  const env = options.env ?? process.env
+  const cloudflaredPath = options.cloudflaredPath ?? env.FLASH_TUNNEL_CLOUDFLARED ?? 'cloudflared'
 
   let childProcess: ChildProcess | undefined
   let output: string[] = []
@@ -80,6 +73,7 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
   let active: ActiveTunnel | undefined
   let accountId: string | undefined
   let plannedMode: TunnelMode = 'quick'
+  let api: CloudflareApi | undefined
 
   function reset(): void {
     childProcess = undefined
@@ -91,9 +85,10 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
 
   function requireApi(): CloudflareApi {
     if (!api) {
-      throw new AdapterError('Named tunnels require CLOUDFLARE_API_TOKEN', {
-        code: 'AUTH_INVALID',
-        hint: 'Set CLOUDFLARE_API_TOKEN, or use --mode quick for a temporary domain'
+      api = new CloudflareApi({
+        env,
+        apiBase: options.apiBase,
+        fetcher: options.fetcher
       })
     }
     return api
@@ -144,7 +139,7 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
     if (accountId) {
       return accountId
     }
-    accountId = await requireApi().resolveAccountId(options.accountId)
+    accountId = await requireApi().resolveAccountId()
     return accountId
   }
 

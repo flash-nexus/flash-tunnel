@@ -22,7 +22,6 @@ export interface CloudflareOriginRequestConfig {
 }
 
 export interface CloudflareProviderConfig {
-  accountId?: string
   cloudflaredPath?: string
   originRequest?: CloudflareOriginRequestConfig
 }

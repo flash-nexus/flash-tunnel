@@ -56,7 +56,10 @@ describe('cloudflareTunnel (named mode)', () => {
 
     const adapter = createCloudflareTunnel({
       cloudflaredPath: binary,
-      apiToken: 'token',
+      env: {
+        CLOUDFLARE_API_TOKEN: 'token',
+        CLOUDFLARE_ACCOUNT_ID: 'acc-1'
+      },
       fetcher
     })
     const ctx = createContext(directory)
@@ -87,6 +90,7 @@ describe('cloudflareTunnel (named mode)', () => {
       hostname: 'demo.example.com',
       service: 'http://127.0.0.1:4321'
     })
+    expect(calls.some(call => call.method === 'GET' && call.url.pathname.endsWith('/accounts'))).toBe(false)
     expect(ingress.config.ingress.at(-1)).toEqual({ service: 'http_status:404' })
 
     await adapter.start(ctx, handle, {})

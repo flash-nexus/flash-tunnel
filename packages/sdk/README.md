@@ -27,7 +27,7 @@ const session = await startTunnel({
 
 For named Cloudflare tunnels, the SDK loads `cwd/.env` when it exists. Pass
 `envFile` to use another file. `CLOUDFLARE_API_TOKEN`,
-`CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_ZONE_ID` are resolved automatically
-unless explicit options are provided.
+and `CLOUDFLARE_ACCOUNT_ID` are resolved automatically by the Cloudflare
+adapter.
 
 宿主程序负责本地服务、进程信号和业务协议；SDK 不安装全局信号处理器，也不依赖 CLI UI。运行仍然需要开发机安装 `cloudflared`。

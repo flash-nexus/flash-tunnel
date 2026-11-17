@@ -18,9 +18,6 @@ export interface EmbeddedTunnelOptions {
   /** Public hostname already configured in DNS for named tunnels. */
   hostname?: string
   name?: string
-  accountId?: string
-  apiToken?: string
-  apiBase?: string
   cloudflaredPath?: string
   originRequest?: {
     httpHostHeader?: string
@@ -56,7 +53,6 @@ function toConfig(options: EmbeddedTunnelOptions, mode: 'quick' | 'named'): Flas
     },
     providers: {
       cloudflare: {
-        accountId: options.accountId,
         cloudflaredPath: options.cloudflaredPath,
         originRequest: options.originRequest
       }
@@ -87,21 +83,10 @@ function publicSession(session: PreviewSession): EmbeddedTunnelSession {
 export async function startTunnel(options: EmbeddedTunnelOptions): Promise<EmbeddedTunnelSession> {
   loadEnvironment(options.envFile, options.cwd)
   const mode = options.mode ?? 'quick'
-  const apiToken = options.apiToken ?? process.env.CLOUDFLARE_API_TOKEN
-  const accountId = options.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
-  const apiBase = options.apiBase ?? process.env.FLASH_TUNNEL_CLOUDFLARE_API_BASE
-  const resolvedOptions = {
-    ...options,
-    accountId,
-    apiToken,
-    apiBase
-  }
   const tunnel = createCloudflareTunnel({
-    cloudflaredPath: resolvedOptions.cloudflaredPath,
-    accountId: resolvedOptions.accountId,
-    apiToken,
-    apiBase,
-    originRequest: resolvedOptions.originRequest
+    env: process.env,
+    cloudflaredPath: options.cloudflaredPath,
+    originRequest: options.originRequest
   })
   if (mode === 'named' && !options.hostname) {
     throw new Error('Named tunnels require a hostname already configured in DNS')
@@ -109,7 +94,7 @@ export async function startTunnel(options: EmbeddedTunnelOptions): Promise<Embed
 
   const session = await startPreviewSession({
     cwd: options.cwd ?? process.cwd(),
-    config: toConfig(resolvedOptions, mode),
+    config: toConfig(options, mode),
     adapters: { tunnel },
     mode,
     hostname: options.hostname,

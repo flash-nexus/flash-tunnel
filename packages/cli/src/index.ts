@@ -35,12 +35,6 @@ interface CleanOptions {
   force?: boolean
 }
 
-function readVersion(): Promise<string> {
-  return readFile(new URL('../package.json', import.meta.url), 'utf8')
-    .then(value => (JSON.parse(value) as { version?: string }).version ?? '0.0.0')
-    .catch(() => '0.0.0')
-}
-
 function loadEnvironment(envFile: string | undefined, cwd: string): void {
   const file = envFile
     ? resolve(cwd, envFile)
@@ -48,6 +42,12 @@ function loadEnvironment(envFile: string | undefined, cwd: string): void {
   if (envFile || existsSync(file)) {
     loadEnvFile(file)
   }
+}
+
+function readVersion(): Promise<string> {
+  return readFile(new URL('../package.json', import.meta.url), 'utf8')
+    .then(value => (JSON.parse(value) as { version?: string }).version ?? '0.0.0')
+    .catch(() => '0.0.0')
 }
 
 function output(value: unknown, json = false): void {
@@ -81,13 +81,11 @@ function effectiveConfig(config: FlashTunnelConfig, resolved: ReturnType<typeof 
 }
 
 function createCleaner(): SessionCleaner | undefined {
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN
-  if (!apiToken) {
+  if (!process.env.CLOUDFLARE_API_TOKEN) {
     return undefined
   }
   const api = new CloudflareApi({
-    apiToken,
-    apiBase: process.env.FLASH_TUNNEL_CLOUDFLARE_API_BASE
+    env: process.env
   })
   return {
     removeTunnel: async (state: SessionState) => {
@@ -173,10 +171,8 @@ async function runStart(options: StartOptions): Promise<void> {
   }
 
   const tunnel = createCloudflareTunnel({
-    accountId: resolved.values.providers.cloudflare.accountId,
-    apiToken: process.env.CLOUDFLARE_API_TOKEN,
+    env: process.env,
     cloudflaredPath: resolved.values.providers.cloudflare.cloudflaredPath,
-    apiBase: process.env.FLASH_TUNNEL_CLOUDFLARE_API_BASE,
     originRequest: resolved.values.providers.cloudflare.originRequest
   })
   const session = await startPreviewSession({
