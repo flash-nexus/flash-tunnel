@@ -25,6 +25,8 @@ export interface EmbeddedTunnelOptions {
    * hostname before the tunnel is verified.
    */
   manageDns?: boolean
+  /** Metadata application used when the supplied DNS adapter owns a record. */
+  dnsOwnerApplication?: string
   /** Required for named tunnels. */
   hostname?: string
   /** Required for named tunnels. */
@@ -141,6 +143,7 @@ export async function startTunnel(options: EmbeddedTunnelOptions): Promise<Embed
     config: toConfig(resolvedOptions, mode),
     adapters: { tunnel, dns },
     manageDns: options.manageDns,
+    dnsOwnerApplication: options.dnsOwnerApplication,
     mode,
     hostname: options.hostname,
     zone: options.zone,

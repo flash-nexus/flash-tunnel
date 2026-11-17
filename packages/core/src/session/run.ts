@@ -78,6 +78,8 @@ export interface StartPreviewSessionOptions {
    * the tunnel handle. Defaults to true for standalone CLI compatibility.
    */
   manageDns?: boolean
+  /** Metadata application used when the session owns a DNS record. */
+  dnsOwnerApplication?: string
   mode?: TunnelMode
   hostname?: string
   zone?: string
@@ -186,6 +188,7 @@ async function retry<T>(operation: () => Promise<T>, attempts: number): Promise<
 
 export async function startPreviewSession(options: StartPreviewSessionOptions): Promise<PreviewSession> {
   const { cwd, config, adapters } = options
+  const dnsOwnerApplication = options.dnsOwnerApplication ?? 'flash-tunnel'
   const mode: TunnelMode = options.mode ?? config.tunnel?.mode ?? 'quick'
   const persist = options.persist ?? true
   const events = options.events ?? new Emitter<FlashTunnelEvents>()
@@ -607,7 +610,7 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
         content: handle.dns.target,
         proxied: handle.dns.proxied,
         ttl: 1,
-        comment: `flash-tunnel:${sessionId}`,
+        comment: `${dnsOwnerApplication}:${sessionId}`,
         overwrite: options.overwrite
       })
       emitStep('dns', 'ok', dnsRef.name)
@@ -628,7 +631,7 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
           zoneId: dnsRef.zoneId,
           recordId: dnsRef.recordId,
           hostname: dnsRef.name,
-          comment: `flash-tunnel:${sessionId}`
+          comment: `${dnsOwnerApplication}:${sessionId}`
         }
         await transition('dns-created')
       }
