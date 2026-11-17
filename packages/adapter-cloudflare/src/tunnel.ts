@@ -161,13 +161,6 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
     capabilities: {
       modes: ['named', 'quick'],
       publicHostname: 'both',
-      requiresDns: false,
-      dns: {
-        type: 'CNAME',
-        targetFrom: 'handle',
-        proxied: true,
-        providerAffinity: ['cloudflare']
-      },
       concurrent: true
     },
 
@@ -205,7 +198,7 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
       if (spec.hostname === undefined) {
         throw new AdapterError('Named tunnel requires a hostname', {
           code: 'TUNNEL_CREATE_FAILED',
-          hint: 'Set domain.zone (and optionally domain.subdomain) in flash-tunnel.ts'
+          hint: 'Set tunnel.hostname in flash-nexus.config.ts or pass --hostname'
         })
       }
 
@@ -241,7 +234,7 @@ export function createCloudflareTunnel(options: CloudflareTunnelOptions = {}): T
         tunnelId: tunnel.id,
         name: spec.name,
         publicUrl: `https://${spec.hostname}`,
-        dns: {
+        target: {
           type: 'CNAME',
           target: `${tunnel.id}.cfargotunnel.com`,
           proxied: true

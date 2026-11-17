@@ -37,31 +37,4 @@ describe('verifyPublicUrl', () => {
       intervalMs: 20
     })).rejects.toThrow(/Timed out after 80ms/)
   })
-
-  it('adds a DNS diagnostic on failure', async () => {
-    vi.stubGlobal('fetch', vi.fn(async (input: string | URL | Request) => {
-      const url = String(input)
-      if (url.includes('cloudflare-dns.com')) {
-        return new Response(JSON.stringify({
-          Answer: [
-            {
-              name: 'demo.example.com',
-              type: 5,
-              data: 'tunnel.cfargotunnel.com'
-            }
-          ]
-        }), {
-          status: 200,
-          headers: { 'content-type': 'application/dns-json' }
-        })
-      }
-      return new Response('bad', { status: 503 })
-    }))
-
-    await expect(verifyPublicUrl('https://demo.example.com', {
-      timeoutMs: 80,
-      intervalMs: 20,
-      diagnoseDns: true
-    })).rejects.toThrow(/DNS diagnostic: demo\.example\.com -> tunnel\.cfargotunnel\.com/)
-  })
 })

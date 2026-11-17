@@ -12,7 +12,7 @@ describe('resourceLedger', () => {
     const ledger = new ResourceLedger()
     const calls: string[] = []
 
-    for (const kind of ['server', 'tunnel', 'dns'] as const) {
+    for (const kind of ['server', 'tunnel', 'external'] as const) {
       ledger.add({
         kind,
         provider: 'fake',
@@ -29,7 +29,7 @@ describe('resourceLedger', () => {
       await entry.dispose()
     }
 
-    expect(calls).toEqual(['dns', 'tunnel', 'server'])
+    expect(calls).toEqual(['external', 'tunnel', 'server'])
     expect(ledger.size).toBe(3)
   })
 

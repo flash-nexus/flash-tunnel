@@ -1,10 +1,10 @@
 import type { FlashTunnelConfig } from '@flash-tunnel/config'
 import type { Emitter, PreviewSession } from '@flash-tunnel/core'
-import type { DnsAdapter, FlashTunnelEvents, TunnelMode } from '@flash-tunnel/types'
+import type { FlashTunnelEvents, TunnelMode } from '@flash-tunnel/types'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import process, { loadEnvFile } from 'node:process'
-import { createCloudflareDns, createCloudflareTunnel } from '@flash-tunnel/adapter-cloudflare'
+import { createCloudflareTunnel } from '@flash-tunnel/adapter-cloudflare'
 import { startPreviewSession } from '@flash-tunnel/core'
 
 export interface EmbeddedTunnelOptions {
@@ -15,25 +15,10 @@ export interface EmbeddedTunnelOptions {
   /** Environment file to load. Defaults to cwd/.env when present. */
   envFile?: string
   mode?: Extract<TunnelMode, 'quick' | 'named'>
-  /**
-   * Custom DNS adapter used for named tunnels. When omitted, the Cloudflare
-   * adapter is created for backwards-compatible standalone usage.
-   */
-  dnsAdapter?: DnsAdapter
-  /**
-   * Disable DNS provisioning and cleanup. The caller must provision the
-   * hostname before the tunnel is verified.
-   */
-  manageDns?: boolean
-  /** Metadata application used when the supplied DNS adapter owns a record. */
-  dnsOwnerApplication?: string
-  /** Required for named tunnels. */
+  /** Public hostname already configured in DNS for named tunnels. */
   hostname?: string
-  /** Required for named tunnels. */
-  zone?: string
   name?: string
   accountId?: string
-  zoneId?: string
   apiToken?: string
   apiBase?: string
   cloudflaredPath?: string
@@ -43,7 +28,6 @@ export interface EmbeddedTunnelOptions {
   }
   persist?: boolean
   keep?: boolean
-  overwrite?: boolean
   autoStopAfterMs?: number
   verifyTimeoutMs?: number
   signal?: AbortSignal
@@ -65,17 +49,14 @@ export interface EmbeddedTunnelSession {
 function toConfig(options: EmbeddedTunnelOptions, mode: 'quick' | 'named'): FlashTunnelConfig {
   return {
     server: { url: options.localUrl },
-    domain: {
-      zone: options.zone
-    },
     tunnel: {
       mode,
-      name: options.name
+      name: options.name,
+      hostname: options.hostname
     },
     providers: {
       cloudflare: {
         accountId: options.accountId,
-        zoneId: options.zoneId,
         cloudflaredPath: options.cloudflaredPath,
         originRequest: options.originRequest
       }
@@ -101,19 +82,17 @@ function publicSession(session: PreviewSession): EmbeddedTunnelSession {
  * Start a tunnel for an already-running local origin.
  *
  * The caller owns the local server lifecycle. This API only owns cloudflared
- * and any named-tunnel/DNS resources created for the session.
+ * and any named-tunnel resources created for the session.
  */
 export async function startTunnel(options: EmbeddedTunnelOptions): Promise<EmbeddedTunnelSession> {
   loadEnvironment(options.envFile, options.cwd)
   const mode = options.mode ?? 'quick'
   const apiToken = options.apiToken ?? process.env.CLOUDFLARE_API_TOKEN
   const accountId = options.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID
-  const zoneId = options.zoneId ?? process.env.CLOUDFLARE_ZONE_ID
   const apiBase = options.apiBase ?? process.env.FLASH_TUNNEL_CLOUDFLARE_API_BASE
   const resolvedOptions = {
     ...options,
     accountId,
-    zoneId,
     apiToken,
     apiBase
   }
@@ -124,34 +103,20 @@ export async function startTunnel(options: EmbeddedTunnelOptions): Promise<Embed
     apiBase,
     originRequest: resolvedOptions.originRequest
   })
-  const dns = mode === 'named' && options.manageDns !== false
-    ? options.dnsAdapter ?? createCloudflareDns({
-      apiToken: apiToken ?? '',
-      zoneId,
-      apiBase
-    })
-    : undefined
-
-  if (mode === 'named' && (!options.hostname || (options.manageDns !== false && !options.zone))) {
-    throw new Error(options.manageDns === false
-      ? 'Named tunnels without DNS management require a hostname'
-      : 'Named tunnels require both hostname and zone')
+  if (mode === 'named' && !options.hostname) {
+    throw new Error('Named tunnels require a hostname already configured in DNS')
   }
 
   const session = await startPreviewSession({
     cwd: options.cwd ?? process.cwd(),
     config: toConfig(resolvedOptions, mode),
-    adapters: { tunnel, dns },
-    manageDns: options.manageDns,
-    dnsOwnerApplication: options.dnsOwnerApplication,
+    adapters: { tunnel },
     mode,
     hostname: options.hostname,
-    zone: options.zone,
     signal: options.signal,
     onLog: options.onLog,
     persist: options.persist,
     keep: options.keep,
-    overwrite: options.overwrite,
     autoStopAfterMs: options.autoStopAfterMs,
     verifyTimeoutMs: options.verifyTimeoutMs
   })

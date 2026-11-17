@@ -4,7 +4,7 @@ import { defineConfig } from '../src'
 describe('defineConfig', () => {
   it('returns the same object', () => {
     const config = {
-      domain: { zone: 'example.com' },
+      tunnel: { mode: 'quick' as const },
       server: { command: 'pnpm dev' }
     }
 

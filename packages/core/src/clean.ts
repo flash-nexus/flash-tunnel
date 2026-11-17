@@ -10,7 +10,6 @@ import {
 } from './state/store'
 
 export interface SessionCleaner {
-  removeDns?: (state: SessionState) => Promise<void>
   removeTunnel?: (state: SessionState) => Promise<void>
 }
 
@@ -65,9 +64,6 @@ function planActions(state: SessionState): string[] {
 
   for (const process of recordedProcesses(state).filter(item => item.kind === 'cloudflared')) {
     actions.push(`stop process ${process.pid} (cloudflared)`)
-  }
-  if (state.dns) {
-    actions.push(`delete dns record ${state.dns.recordId} (${state.dns.hostname})`)
   }
   if (state.tunnel && state.tunnel.mode === 'named') {
     actions.push(`delete tunnel ${state.tunnel.tunnelId} (${state.tunnel.name})`)
@@ -137,13 +133,6 @@ export async function cleanSession(
       if (canKill && isProcessAlive(process.pid)) {
         throw new Error(`cloudflared process ${process.pid} is still running`)
       }
-    }
-
-    if (state.dns) {
-      if (!options.cleaner?.removeDns) {
-        throw new Error('No DNS cleaner configured')
-      }
-      await options.cleaner.removeDns(state)
     }
 
     if (state.tunnel && state.tunnel.mode === 'named') {

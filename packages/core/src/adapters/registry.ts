@@ -1,8 +1,7 @@
-import type { DnsAdapter, TunnelAdapter } from '@flash-tunnel/types'
-import { loadDnsAdapter, loadTunnelAdapter } from './load'
+import type { TunnelAdapter } from '@flash-tunnel/types'
+import { loadTunnelAdapter } from './load'
 
 export type TunnelFactory = () => TunnelAdapter
-export type DnsFactory = () => DnsAdapter
 
 /**
  * Built-in adapters are registered by the CLI; anything not registered is
@@ -10,25 +9,14 @@ export type DnsFactory = () => DnsAdapter
  */
 export class AdapterRegistry {
   private readonly tunnels = new Map<string, TunnelFactory>()
-  private readonly dns = new Map<string, DnsFactory>()
 
   registerTunnel(id: string, factory: TunnelFactory): void {
     this.tunnels.set(id, factory)
   }
 
-  registerDns(id: string, factory: DnsFactory): void {
-    this.dns.set(id, factory)
-  }
-
   listTunnels(): string[] {
     return [
       ...this.tunnels.keys()
-    ]
-  }
-
-  listDns(): string[] {
-    return [
-      ...this.dns.keys()
     ]
   }
 
@@ -38,13 +26,5 @@ export class AdapterRegistry {
       return factory()
     }
     return loadTunnelAdapter(id, cwd)
-  }
-
-  async resolveDns(id: string, cwd: string): Promise<DnsAdapter> {
-    const factory = this.dns.get(id)
-    if (factory) {
-      return factory()
-    }
-    return loadDnsAdapter(id, cwd)
   }
 }

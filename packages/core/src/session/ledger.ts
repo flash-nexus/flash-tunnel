@@ -1,4 +1,4 @@
-export type LedgerKind = 'dns' | 'server' | 'tunnel' | 'tunnel-process'
+export type LedgerKind = 'external' | 'server' | 'tunnel' | 'tunnel-process'
 
 export interface LedgerOrigin {
   sessionId: string

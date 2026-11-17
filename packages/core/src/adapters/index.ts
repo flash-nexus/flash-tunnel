@@ -1,5 +1,3 @@
-export { validateAdapterCombination } from './combination'
-export type { AdapterCombination, AdapterCombinationInput } from './combination'
-export { loadDnsAdapter, loadTunnelAdapter } from './load'
+export { loadTunnelAdapter } from './load'
 export { AdapterRegistry } from './registry'
-export type { DnsFactory, TunnelFactory } from './registry'
+export type { TunnelFactory } from './registry'

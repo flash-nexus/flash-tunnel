@@ -2,8 +2,6 @@ import type { FlashTunnelConfig } from '@flash-tunnel/config'
 import type {
   AdapterContext,
   AdapterLogger,
-  DnsAdapter,
-  DnsRecordRef,
   FlashTunnelEvents,
   TunnelAdapter,
   TunnelHandle,
@@ -34,9 +32,9 @@ import { CORE_API_VERSION, createSessionId } from './id'
 import { ResourceLedger } from './ledger'
 
 const CLEANUP_TIMEOUTS = {
+  external: 10_000,
   tunnelStop: 8_000,
   tunnelDrain: 10_000,
-  dnsRemove: 10_000,
   tunnelDeprovision: 10_000,
   serverStop: 8_000
 } as const
@@ -44,8 +42,8 @@ const CLEANUP_TIMEOUTS = {
 const CLEANUP_BUDGET_MS = 30_000
 
 const CLEANUP_STEPS: Record<LedgerKind, { name: string, timeoutMs: number, attempts: number }> = {
+  'external': { name: 'external.cleanup', timeoutMs: CLEANUP_TIMEOUTS.external, attempts: 3 },
   'tunnel-process': { name: 'tunnel.stop', timeoutMs: CLEANUP_TIMEOUTS.tunnelStop, attempts: 1 },
-  'dns': { name: 'dns.remove', timeoutMs: CLEANUP_TIMEOUTS.dnsRemove, attempts: 3 },
   'tunnel': { name: 'tunnel.deprovision', timeoutMs: CLEANUP_TIMEOUTS.tunnelDeprovision, attempts: 3 },
   'server': { name: 'server.stop', timeoutMs: CLEANUP_TIMEOUTS.serverStop, attempts: 1 }
 }
@@ -54,8 +52,7 @@ const ALLOWED_TRANSITIONS: Record<SessionPhase, readonly SessionPhase[]> = {
   'starting': ['server-ready', 'tearing-down'],
   'server-ready': ['provisioning-tunnel', 'tearing-down'],
   'provisioning-tunnel': ['tunnel-provisioned', 'tearing-down'],
-  'tunnel-provisioned': ['dns-created', 'running', 'tearing-down'],
-  'dns-created': ['running', 'tearing-down'],
+  'tunnel-provisioned': ['running', 'tearing-down'],
   'running': ['tearing-down'],
   'tearing-down': [],
   'kept': [],
@@ -64,7 +61,13 @@ const ALLOWED_TRANSITIONS: Record<SessionPhase, readonly SessionPhase[]> = {
 
 export interface PreviewAdapters {
   tunnel: TunnelAdapter
-  dns?: DnsAdapter
+}
+
+export interface PreparedSessionResource {
+  provider: string
+  ref: unknown
+  owned?: boolean
+  dispose: () => Promise<void>
 }
 
 export interface StartPreviewSessionOptions {
@@ -73,22 +76,15 @@ export interface StartPreviewSessionOptions {
   /** Execute a caller-resolved plan without repeating server detection. */
   serverPlan?: ServerPlan
   adapters: PreviewAdapters
-  /**
-   * Whether the session should create and remove the DNS record described by
-   * the tunnel handle. Defaults to true for standalone CLI compatibility.
-   */
-  manageDns?: boolean
-  /** Metadata application used when the session owns a DNS record. */
-  dnsOwnerApplication?: string
+  /** Prepare caller-owned resources after tunnel provision and before start. */
+  prepare?: (ctx: AdapterContext, handle: TunnelHandle) => Promise<PreparedSessionResource | undefined>
   mode?: TunnelMode
   hostname?: string
-  zone?: string
   signal?: AbortSignal
   onLog?: (line: string, stream: 'stdout' | 'stderr') => void
   verifyTimeoutMs?: number
   persist?: boolean
   keep?: boolean
-  overwrite?: boolean
   autoStopAfterMs?: number
   configSource?: string
   /** Test hook: shrink the total cleanup budget. */
@@ -104,7 +100,6 @@ export interface PreviewSession {
   hostname?: string
   server: ServerHandle
   tunnel: TunnelHandle
-  dns?: DnsRecordRef
   expiresAt?: string
   exited: Promise<void>
   autoStopped?: Promise<void>
@@ -188,7 +183,6 @@ async function retry<T>(operation: () => Promise<T>, attempts: number): Promise<
 
 export async function startPreviewSession(options: StartPreviewSessionOptions): Promise<PreviewSession> {
   const { cwd, config, adapters } = options
-  const dnsOwnerApplication = options.dnsOwnerApplication ?? 'flash-tunnel'
   const mode: TunnelMode = options.mode ?? config.tunnel?.mode ?? 'quick'
   const persist = options.persist ?? true
   const events = options.events ?? new Emitter<FlashTunnelEvents>()
@@ -377,7 +371,6 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
 
   const tunnelName = config.tunnel?.name ?? `flash-tunnel-${slugify(basename(cwd))}-${randomId(4)}`
   let handle: TunnelHandle | undefined
-  let dnsRef: DnsRecordRef | undefined
   let stopPromise: Promise<void> | undefined
   let stopping = false
   let heartbeatTimer: NodeJS.Timeout | undefined
@@ -588,58 +581,17 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
 
     events.emit('tunnel:provisioned', { tunnelId: handle.tunnelId, name: handle.name })
 
-    if (handle.dns && options.manageDns !== false) {
-      if (!adapters.dns) {
-        throw new Error('The tunnel requires a DNS record but no DNS adapter is configured')
-      }
-      if (!options.hostname || !options.zone) {
-        throw new Error('A hostname and zone are required for the DNS record')
-      }
-
-      emitStep('dns', 'start')
-      await adapters.dns.preflight(ctx, {
-        zone: options.zone,
-        name: options.hostname,
-        type: handle.dns.type,
-        overwrite: options.overwrite
-      })
-      dnsRef = await adapters.dns.ensure(ctx, {
-        zone: options.zone,
-        name: options.hostname,
-        type: handle.dns.type,
-        content: handle.dns.target,
-        proxied: handle.dns.proxied,
-        ttl: 1,
-        comment: `${dnsOwnerApplication}:${sessionId}`,
-        overwrite: options.overwrite
-      })
-      emitStep('dns', 'ok', dnsRef.name)
-
-      const createdDns = dnsRef
+    const prepared = options.prepare
+      ? await options.prepare(ctx, handle)
+      : undefined
+    if (prepared) {
       ledger.add({
-        kind: 'dns',
-        provider: createdDns.provider,
-        ref: createdDns,
+        kind: 'external',
+        provider: prepared.provider,
+        ref: prepared.ref,
         origin,
-        owned: !options.keep,
-        dispose: () => adapters.dns!.remove(ctx, createdDns)
-      })
-
-      if (state) {
-        state.dns = {
-          provider: dnsRef.provider,
-          zoneId: dnsRef.zoneId,
-          recordId: dnsRef.recordId,
-          hostname: dnsRef.name,
-          comment: `${dnsOwnerApplication}:${sessionId}`
-        }
-        await transition('dns-created')
-      }
-
-      events.emit('dns:created', {
-        hostname: dnsRef.name,
-        recordId: dnsRef.recordId,
-        zoneId: dnsRef.zoneId
+        owned: prepared.owned ?? !options.keep,
+        dispose: prepared.dispose
       })
     }
 
@@ -691,8 +643,7 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
     try {
       verified = await verifyPublicUrl(publicUrl, {
         timeoutMs: options.verifyTimeoutMs ?? 60_000,
-        signal: options.signal,
-        diagnoseDns: true
+        signal: options.signal
       })
     }
     catch (error) {
@@ -762,7 +713,6 @@ export async function startPreviewSession(options: StartPreviewSessionOptions): 
       hostname: options.hostname,
       server,
       tunnel: handle,
-      dns: dnsRef,
       expiresAt: state?.expiresAt,
       exited: tunnelExited,
       autoStopped,

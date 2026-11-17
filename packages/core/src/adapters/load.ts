@@ -1,7 +1,7 @@
-import type { DnsAdapter, TunnelAdapter } from '@flash-tunnel/types'
+import type { TunnelAdapter } from '@flash-tunnel/types'
 import { isAbsolute, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { ADAPTER_API_VERSION, isDnsAdapter, isTunnelAdapter } from '@flash-tunnel/types'
+import { ADAPTER_API_VERSION, isTunnelAdapter } from '@flash-tunnel/types'
 import { FlashTunnelError } from '../errors'
 
 function adapterError(message: string, hint?: string, cause?: unknown): FlashTunnelError {
@@ -67,21 +67,6 @@ export async function loadTunnelAdapter(spec: string, cwd: string): Promise<Tunn
       checkVersion(spec, candidate as { apiVersion?: number })
     }
     throw adapterError(`"${spec}" does not export a valid tunnel adapter`)
-  }
-
-  checkVersion(spec, candidate)
-  return candidate
-}
-
-export async function loadDnsAdapter(spec: string, cwd: string): Promise<DnsAdapter> {
-  const module = await importAdapterModule(spec, cwd)
-  const candidate = await resolveExport(module, 'dns')
-
-  if (!isDnsAdapter(candidate)) {
-    if (candidate && typeof candidate === 'object' && (candidate as { kind?: string }).kind === 'dns') {
-      checkVersion(spec, candidate as { apiVersion?: number })
-    }
-    throw adapterError(`"${spec}" does not export a valid DNS adapter`)
   }
 
   checkVersion(spec, candidate)

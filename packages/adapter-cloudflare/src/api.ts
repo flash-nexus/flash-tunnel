@@ -1,4 +1,3 @@
-import type { DnsRecordSpec, DnsRecordType } from '@flash-tunnel/types'
 import { AdapterError } from '@flash-tunnel/types'
 
 export interface CloudflareApiOptions {
@@ -12,27 +11,12 @@ export interface CloudflareAccount {
   name: string
 }
 
-export interface CloudflareZone {
-  id: string
-  name: string
-  status: string
-}
-
 export interface CloudflareTunnel {
   id: string
   name: string
   status: string
   connections?: Array<{ id: string }>
   token?: string
-}
-
-export interface CloudflareDnsRecord {
-  id: string
-  name: string
-  type: DnsRecordType
-  content: string
-  proxied: boolean
-  comment?: string
 }
 
 interface CloudflareEnvelope<T> {
@@ -126,7 +110,7 @@ export class CloudflareApi {
     if (result?.status !== 'active') {
       throw new AdapterError('Cloudflare API token is not active', {
         code: 'AUTH_INVALID',
-        hint: 'Create a token with Account Cloudflare Tunnel Edit and Zone DNS Edit'
+        hint: 'Create a token with Account Cloudflare Tunnel Edit'
       })
     }
   }
@@ -152,32 +136,6 @@ export class CloudflareApi {
         accounts: accounts.map(account => account.name)
       }
     })
-  }
-
-  async listZones(name?: string): Promise<CloudflareZone[]> {
-    const query = new URLSearchParams({ per_page: '50' })
-    if (name) {
-      query.set('name', name)
-    }
-    return this.request<CloudflareZone[]>('GET', `/zones?${query.toString()}`)
-  }
-
-  async resolveZone(zone: string): Promise<CloudflareZone> {
-    const zones = await this.listZones(zone)
-    const match = zones.find(item => item.name === zone)
-    if (!match) {
-      throw new AdapterError(`Zone "${zone}" was not found`, {
-        code: 'ZONE_NOT_FOUND',
-        hint: 'Check domain.zone, or set CLOUDFLARE_ZONE_ID'
-      })
-    }
-    if (match.status !== 'active') {
-      throw new AdapterError(`Zone "${zone}" is ${match.status}`, {
-        code: 'ZONE_NOT_ACTIVE',
-        hint: 'Wait for the zone to become active in Cloudflare'
-      })
-    }
-    return match
   }
 
   async createTunnel(accountId: string, name: string): Promise<CloudflareTunnel> {
@@ -221,31 +179,5 @@ export class CloudflareApi {
 
   async deleteTunnel(accountId: string, tunnelId: string): Promise<void> {
     await this.request('DELETE', `/accounts/${accountId}/cfd_tunnel/${tunnelId}`)
-  }
-
-  async listDnsRecords(zoneId: string, query: { name?: string, comment?: string } = {}): Promise<CloudflareDnsRecord[]> {
-    const params = new URLSearchParams({ per_page: '100' })
-    if (query.name) {
-      params.set('name', query.name)
-    }
-    if (query.comment) {
-      params.set('comment', query.comment)
-    }
-    return this.request<CloudflareDnsRecord[]>('GET', `/zones/${zoneId}/dns_records?${params.toString()}`)
-  }
-
-  async createDnsRecord(zoneId: string, spec: DnsRecordSpec): Promise<CloudflareDnsRecord> {
-    return this.request<CloudflareDnsRecord>('POST', `/zones/${zoneId}/dns_records`, {
-      type: spec.type,
-      name: spec.name,
-      content: spec.content,
-      proxied: spec.proxied ?? false,
-      ttl: spec.ttl ?? 1,
-      comment: spec.comment
-    })
-  }
-
-  async deleteDnsRecord(zoneId: string, recordId: string): Promise<void> {
-    await this.request('DELETE', `/zones/${zoneId}/dns_records/${recordId}`)
   }
 }

@@ -14,22 +14,16 @@ console.log(session.publicUrl)
 await session.stop()
 ```
 
-Named tunnels can receive a DNS adapter from an orchestration layer. This
-keeps DNS ownership outside the tunnel SDK while preserving the standalone
-Cloudflare adapter by default:
+Named tunnels expect the hostname to already exist in DNS. This SDK only
+creates and manages the tunnel itself:
 
 ```ts
 const session = await startTunnel({
   localUrl: 'http://127.0.0.1:4317',
   mode: 'named',
-  hostname: 'preview.example.com',
-  zone: 'example.com',
-  dnsAdapter
+  hostname: 'preview.example.com'
 })
 ```
-
-Set `manageDns: false` when the caller has already created the DNS record and
-only wants the tunnel lifecycle.
 
 For named Cloudflare tunnels, the SDK loads `cwd/.env` when it exists. Pass
 `envFile` to use another file. `CLOUDFLARE_API_TOKEN`,

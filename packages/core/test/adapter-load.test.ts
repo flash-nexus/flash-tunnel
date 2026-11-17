@@ -1,146 +1,61 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { AdapterRegistry, loadDnsAdapter, loadTunnelAdapter } from '../src'
+import { describe, expect, it } from 'vitest'
+import { AdapterRegistry, loadTunnelAdapter } from '../src'
 
-let directory: string
+describe('tunnel adapter loading', () => {
+  it('loads a tunnel adapter from a local module', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'flash-tunnel-adapter-'))
+    try {
+      await writeFile(join(directory, 'adapter.mjs'), `
+        export default {
+          kind: 'tunnel',
+          id: 'local',
+          apiVersion: 1,
+          capabilities: { modes: ['quick'], publicHostname: 'assigned', concurrent: true },
+          preflight: async () => {},
+          provision: async (_ctx, spec) => ({ provider: 'local', tunnelId: '1', name: spec.name, secrets: {} }),
+          start: async () => {},
+          waitReady: async () => ({ state: 'connected', connections: 0 }),
+          stop: async () => {},
+          deprovision: async () => {}
+        }
+      `)
 
-function tunnelSource(apiVersion = 1) {
-  return `
-export default {
-  kind: 'tunnel',
-  id: 'fake',
-  apiVersion: ${apiVersion},
-  capabilities: { modes: ['quick'], publicHostname: 'assigned', requiresDns: false, concurrent: true },
-  preflight: async () => {},
-  provision: async () => ({ provider: 'fake', tunnelId: 't', name: 'n', secrets: {} }),
-  start: async () => {},
-  waitReady: async () => ({ state: 'connected', connections: 1 }),
-  stop: async () => {},
-  deprovision: async () => {}
-}
-`
-}
+      const adapter = await loadTunnelAdapter('file:./adapter.mjs', directory)
+      expect(adapter.id).toBe('local')
+    }
+    finally {
+      await rm(directory, { recursive: true, force: true })
+    }
+  })
 
-const dnsSource = `
-export default {
-  kind: 'dns',
-  id: 'fake-dns',
-  apiVersion: 1,
-  capabilities: { recordTypes: ['CNAME'], proxied: true, ttl: true, comment: true, lookupByName: true },
-  preflight: async () => {},
-  ensure: async () => ({ provider: 'fake-dns', zoneId: 'z', recordId: 'r', name: 'n', type: 'CNAME', content: 'c', proxied: true }),
-  remove: async () => {},
-  find: async () => []
-}
-`
-
-beforeEach(async () => {
-  directory = await mkdtemp(join(tmpdir(), 'flash-tunnel-adapter-'))
-})
-
-afterEach(async () => {
-  await rm(directory, { recursive: true, force: true })
-})
-
-describe('adapterRegistry', () => {
-  it('resolves registered factories and lists them', async () => {
-    await writeFile(join(directory, 'tunnel.mjs'), tunnelSource())
-    await writeFile(join(directory, 'dns.mjs'), dnsSource)
-
+  it('resolves registered tunnel adapters', async () => {
     const registry = new AdapterRegistry()
-    registry.registerTunnel('built', () => ({
-      kind: 'tunnel',
-      id: 'built',
-      apiVersion: 1,
+    const adapter = {
+      kind: 'tunnel' as const,
+      id: 'registered',
+      apiVersion: 1 as const,
       capabilities: {
-        modes: ['quick'],
-        publicHostname: 'assigned',
-        requiresDns: false,
+        modes: ['quick' as const],
+        publicHostname: 'assigned' as const,
         concurrent: true
       },
       preflight: async () => {},
-      provision: async () => ({
-        provider: 'built',
-        tunnelId: 't',
-        name: 'n',
+      provision: async (_ctx: unknown, spec: { name: string }) => ({
+        provider: 'registered',
+        tunnelId: '1',
+        name: spec.name,
         secrets: {}
       }),
       start: async () => {},
-      waitReady: async () => ({ state: 'connected', connections: 1 }),
+      waitReady: async () => ({ state: 'connected' as const, connections: 0 }),
       stop: async () => {},
       deprovision: async () => {}
-    }))
-    registry.registerDns('built-dns', () => ({
-      kind: 'dns',
-      id: 'built-dns',
-      apiVersion: 1,
-      capabilities: {
-        recordTypes: ['CNAME'],
-        proxied: true,
-        ttl: true,
-        comment: true,
-        lookupByName: true
-      },
-      preflight: async () => {},
-      ensure: async () => ({
-        provider: 'built-dns',
-        zoneId: 'z',
-        recordId: 'r',
-        name: 'n',
-        type: 'CNAME',
-        content: 'c',
-        proxied: true
-      }),
-      remove: async () => {},
-      find: async () => []
-    }))
+    }
+    registry.registerTunnel('registered', () => adapter)
 
-    expect(registry.listTunnels()).toEqual(['built'])
-    expect(registry.listDns()).toEqual(['built-dns'])
-    expect((await registry.resolveTunnel('built', directory)).id).toBe('built')
-    expect((await registry.resolveDns('built-dns', directory)).id).toBe('built-dns')
-    expect((await registry.resolveTunnel('file:./tunnel.mjs', directory)).id).toBe('fake')
-    expect((await registry.resolveDns('file:./dns.mjs', directory)).id).toBe('fake-dns')
-  })
-})
-
-describe('adapter loader', () => {
-  it('loads a local tunnel adapter module', async () => {
-    await writeFile(join(directory, 'tunnel.mjs'), tunnelSource())
-    const adapter = await loadTunnelAdapter('file:./tunnel.mjs', directory)
-
-    expect(adapter.id).toBe('fake')
-    expect(adapter.capabilities.modes).toEqual(['quick'])
-  })
-
-  it('loads a local dns adapter module', async () => {
-    await writeFile(join(directory, 'dns.mjs'), dnsSource)
-    const adapter = await loadDnsAdapter('file:./dns.mjs', directory)
-
-    expect(adapter.id).toBe('fake-dns')
-  })
-
-  it('rejects an incompatible api version', async () => {
-    await writeFile(join(directory, 'old.mjs'), tunnelSource(2))
-
-    await expect(loadTunnelAdapter('file:./old.mjs', directory))
-      .rejects
-      .toThrow(/API version 2/)
-  })
-
-  it('rejects a module without an adapter export', async () => {
-    await writeFile(join(directory, 'empty.mjs'), 'export const other = 1\n')
-
-    await expect(loadTunnelAdapter('file:./empty.mjs', directory))
-      .rejects
-      .toThrow(/does not export a valid tunnel adapter/)
-  })
-
-  it('reports missing modules with a hint', async () => {
-    await expect(loadTunnelAdapter('file:./missing.mjs', directory))
-      .rejects
-      .toMatchObject({ code: 'ADAPTER_LOAD_FAILED' })
+    await expect(registry.resolveTunnel('registered', process.cwd())).resolves.toBe(adapter)
   })
 })

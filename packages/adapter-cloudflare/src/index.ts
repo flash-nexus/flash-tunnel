@@ -1,10 +1,7 @@
 export { CloudflareApi } from './api'
-export type { CloudflareAccount, CloudflareDnsRecord, CloudflareTunnel, CloudflareZone } from './api'
-export { createCloudflareDns } from './dns'
-export type { CloudflareDnsOptions } from './dns'
+export type { CloudflareAccount, CloudflareTunnel } from './api'
 export { cloudflareTunnel, createCloudflareTunnel } from './tunnel'
 export type { CloudflareTunnelOptions } from './tunnel'
 
-export const CLOUDFLARE_DNS_ADAPTER_ID = 'cloudflare'
 export const CLOUDFLARE_TUNNEL_ADAPTER_ID = 'cloudflare'
 export const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'

@@ -1,11 +1,5 @@
 export type ConfigTunnelMode = 'named' | 'quick'
 
-export interface DomainConfig {
-  provider?: string
-  zone?: string
-  subdomain?: string
-}
-
 export interface ServerConfig {
   command?: string
   cwd?: string
@@ -19,6 +13,7 @@ export interface TunnelConfig {
   provider?: string
   mode?: ConfigTunnelMode
   name?: string
+  hostname?: string
 }
 
 export interface CloudflareOriginRequestConfig {
@@ -28,7 +23,6 @@ export interface CloudflareOriginRequestConfig {
 
 export interface CloudflareProviderConfig {
   accountId?: string
-  zoneId?: string
   cloudflaredPath?: string
   originRequest?: CloudflareOriginRequestConfig
 }
@@ -39,7 +33,6 @@ export interface ProvidersConfig {
 }
 
 export interface FlashTunnelConfig {
-  domain?: DomainConfig
   server?: ServerConfig
   tunnel?: TunnelConfig
   providers?: ProvidersConfig

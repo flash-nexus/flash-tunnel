@@ -13,7 +13,6 @@ export type SessionPhase
     | 'server-ready'
     | 'provisioning-tunnel'
     | 'tunnel-provisioned'
-    | 'dns-created'
     | 'running'
     | 'tearing-down'
     | 'kept'
@@ -42,14 +41,6 @@ export interface SessionTunnelState {
   configured?: boolean
 }
 
-export interface SessionDnsState {
-  provider: string
-  zoneId: string
-  recordId: string
-  hostname: string
-  comment?: string
-}
-
 export interface SessionState {
   version: 1
   sessionId: string
@@ -62,7 +53,6 @@ export interface SessionState {
   server: SessionServerState
   processes?: SessionProcessState[]
   tunnel?: SessionTunnelState
-  dns?: SessionDnsState
   expiresAt?: string
   cleanup: {
     required: boolean

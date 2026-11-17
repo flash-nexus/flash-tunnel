@@ -68,7 +68,7 @@ describe('cloudflareTunnel (named mode)', () => {
       localUrl: 'http://127.0.0.1:4321'
     })
 
-    expect(handle.dns).toEqual({
+    expect(handle.target).toEqual({
       type: 'CNAME',
       target: 'tunnel-1.cfargotunnel.com',
       proxied: true
